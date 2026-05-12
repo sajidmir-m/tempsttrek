@@ -1,0 +1,24 @@
+{
+  "name": "Mir Baba Tour and Travels",
+  "short_name": "Mir Baba Tours",
+  "description": "Experience the beauty of Kashmir with Mir Baba Tour and Travels",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3C0D2B",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
