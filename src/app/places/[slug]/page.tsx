@@ -54,7 +54,7 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen pt-28 pb-16">
+    <div className="bg-gray-50 min-h-screen pb-16">
       <section className="px-4">
         <div className="max-w-6xl mx-auto space-y-10">
           {/* Breadcrumb */}

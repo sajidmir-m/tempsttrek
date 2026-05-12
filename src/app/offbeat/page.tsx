@@ -5,110 +5,15 @@ import Image from 'next/image';
 import { Car, Compass, Phone, Shield, MapPin, Mountain, Sparkles } from 'lucide-react';
 import { SOCIAL_LINKS } from '@/lib/social-links';
 import { supabase } from '@/lib/supabase';
+import type { OffbeatSpotFallback as OffbeatSpot } from '@/data/offbeat-spots-fallback';
+import { FALLBACK_OFFBEAT_HIDDEN, FALLBACK_OFFBEAT_TREKS } from '@/data/offbeat-spots-fallback';
+import { offbeatSpotPath } from '@/lib/offbeat-slug';
 
 export const metadata: Metadata = {
   title: 'Off Beat Kashmir | Transport & Rentals | Tempesttrek',
   description:
     'Hidden valleys, quieter routes, and dependable wheels. Tempesttrek helps you combine off-beat Kashmir with car hire and private cab plans.',
 };
-
-type OffbeatSpot = {
-  id: string;
-  type: 'trek' | 'hidden_place';
-  name: string;
-  region: string | null;
-  difficulty: string | null;
-  best_season: string | null;
-  duration: string | null;
-  altitude: string | null;
-  description: string | null;
-  hero_image: string | null;
-  is_featured: boolean | null;
-};
-
-const FALLBACK_TREKS: OffbeatSpot[] = [
-  {
-    id: 'fallback-trek-1',
-    type: 'trek',
-    name: 'Tarsar Marsar Trek',
-    region: 'Anantnag',
-    difficulty: 'Moderate',
-    best_season: 'Jul - Sep',
-    duration: '7 Days',
-    altitude: '~ 4,000m',
-    description: 'Twin alpine lakes trek with unreal meadows and campsites.',
-    hero_image: '/videos/adventure-1.png',
-    is_featured: true,
-  },
-  {
-    id: 'fallback-trek-2',
-    type: 'trek',
-    name: 'Kolahoi Glacier Trek',
-    region: 'Pahalgam',
-    difficulty: 'Challenging',
-    best_season: 'Jun - Sep',
-    duration: '5 Days',
-    altitude: '~ 4,700m',
-    description: 'Classic Kashmir glacier trek for serious hikers.',
-    hero_image: '/videos/adventure-2.png',
-    is_featured: true,
-  },
-  {
-    id: 'fallback-trek-3',
-    type: 'trek',
-    name: 'Gurez Tulail Trail',
-    region: 'Gurez Valley',
-    difficulty: 'Moderate',
-    best_season: 'Jun - Oct',
-    duration: '3–5 Days',
-    altitude: '~ 3,000m',
-    description: 'Hidden routes in Gurez with river views and wooden villages.',
-    hero_image: '/videos/adventure-2.png',
-    is_featured: false,
-  },
-];
-
-const FALLBACK_HIDDEN: OffbeatSpot[] = [
-  {
-    id: 'fallback-hidden-1',
-    type: 'hidden_place',
-    name: 'Bangus Valley',
-    region: 'Kupwara',
-    difficulty: 'Easy',
-    best_season: 'May - Oct',
-    duration: null,
-    altitude: null,
-    description: 'Wide grasslands, pine forests, and minimal crowds.',
-    hero_image: '/videos/adventure-1.png',
-    is_featured: true,
-  },
-  {
-    id: 'fallback-hidden-2',
-    type: 'hidden_place',
-    name: 'Doodhpathri Meadows',
-    region: 'Budgam',
-    difficulty: 'Easy',
-    best_season: 'Apr - Oct',
-    duration: null,
-    altitude: null,
-    description: 'Green valleys and milky streams—perfect for spring picnics.',
-    hero_image: '/videos/adventure-2.png',
-    is_featured: true,
-  },
-  {
-    id: 'fallback-hidden-3',
-    type: 'hidden_place',
-    name: 'Aharbal Waterfall',
-    region: 'Kulgam',
-    difficulty: 'Easy',
-    best_season: 'Apr - Oct',
-    duration: null,
-    altitude: null,
-    description: 'Powerful waterfall with forest roads and quiet viewpoints.',
-    hero_image: '/videos/adventure-1.png',
-    is_featured: false,
-  },
-];
 
 const highlights = [
   {
@@ -141,18 +46,22 @@ async function fetchOffbeat(): Promise<{ treks: OffbeatSpot[]; hidden: OffbeatSp
     const treks = rows.filter((r) => r.type === 'trek');
     const hidden = rows.filter((r) => r.type === 'hidden_place');
     return {
-      treks: treks.length ? treks : FALLBACK_TREKS,
-      hidden: hidden.length ? hidden : FALLBACK_HIDDEN,
+      treks: treks.length ? treks : FALLBACK_OFFBEAT_TREKS,
+      hidden: hidden.length ? hidden : FALLBACK_OFFBEAT_HIDDEN,
     };
   } catch {
-    return { treks: FALLBACK_TREKS, hidden: FALLBACK_HIDDEN };
+    return { treks: FALLBACK_OFFBEAT_TREKS, hidden: FALLBACK_OFFBEAT_HIDDEN };
   }
 }
 
 function SpotCard({ spot, tag }: { spot: OffbeatSpot; tag: 'Trek' | 'Hidden' }) {
   const img = spot.hero_image?.trim() || '/videos/adventure-1.png';
+  const href = offbeatSpotPath(spot);
   return (
-    <div className="group bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden hover:shadow-xl transition-all [transform-style:preserve-3d] hover:[transform:rotateX(2deg)_rotateY(-2deg)_translateY(-2px)]">
+    <Link
+      href={href}
+      className="group block bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden hover:shadow-xl transition-all [transform-style:preserve-3d] hover:[transform:rotateX(2deg)_rotateY(-2deg)_translateY(-2px)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+    >
       <div className="relative h-44">
         <Image src={img} alt={spot.name} fill className="object-cover group-hover:scale-[1.04] transition-transform duration-500" sizes="(max-width:768px) 100vw, 33vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
@@ -193,26 +102,38 @@ function SpotCard({ spot, tag }: { spot: OffbeatSpot; tag: 'Trek' | 'Hidden' }) 
             </span>
           )}
         </div>
+        <p className="mt-3 text-xs font-semibold text-emerald-700">View details →</p>
       </div>
-    </div>
+    </Link>
   );
 }
 
 export default async function OffBeatPage() {
   const { treks, hidden } = await fetchOffbeat();
   return (
-    <div className="bg-gray-50 min-h-screen pt-28 pb-20">
+    <div className="bg-gray-50 min-h-screen pb-20">
       <section className="px-4">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal width="100%">
-            <div className="rounded-3xl overflow-hidden mb-14 bg-gradient-to-r from-emerald-800 via-teal-700 to-sky-800 text-white px-6 py-14 md:px-14 md:py-16">
-              <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-100 mb-3">
+            <div className="relative rounded-3xl overflow-hidden mb-14 text-white px-6 py-14 md:px-14 md:py-16 min-h-[300px] md:min-h-[380px] flex flex-col justify-center">
+              <Image
+                src="/Ladakh.jpeg"
+                alt=""
+                fill
+                className="object-cover scale-[1.02]"
+                sizes="100vw"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/50 via-teal-900/32 to-sky-950/48" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+              <div className="relative z-10">
+              <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-50 mb-3 [text-shadow:0_1px_8px_rgba(0,0,0,0.75)]">
                 Off the beaten path
               </p>
-              <h1 className="text-3xl md:text-5xl font-extrabold mb-4 max-w-3xl">
+              <h1 className="text-3xl md:text-5xl font-extrabold mb-4 max-w-3xl [text-shadow:0_2px_28px_rgba(0,0,0,0.85),0_1px_4px_rgba(0,0,0,0.9)]">
                 Off Beat Kashmir — routes, rhythm, and the right wheels
               </h1>
-              <p className="text-lg text-white/90 max-w-2xl mb-8">
+              <p className="text-lg text-white max-w-2xl mb-8 [text-shadow:0_2px_14px_rgba(0,0,0,0.8)]">
                 Pair quieter destinations with reliable transport: private cab packages for sightseeing and
                 transfers, plus flexible car hire for your itinerary. Tell us how adventurous you want to go—we
                 will shape realistic days on the road.
@@ -230,6 +151,7 @@ export default async function OffBeatPage() {
                 >
                   Plan an off-beat route
                 </Link>
+              </div>
               </div>
             </div>
           </ScrollReveal>
@@ -327,7 +249,7 @@ export default async function OffBeatPage() {
                 </ul>
                 <div className="flex flex-wrap gap-3">
                   <a
-                    href="https://wa.me/919906646113"
+                    href="https://wa.me/917006796123"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 text-sm font-semibold"

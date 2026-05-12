@@ -28,6 +28,7 @@ import {
   Home,
   ClipboardList,
   ExternalLink,
+  Share2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_PACKAGES } from '@/data/packages';
@@ -39,6 +40,7 @@ import AdminInquiryModal from '@/components/admin/AdminInquiryModal';
 import AdminCabModal from '@/components/admin/AdminCabModal';
 import AdminPlaceModal from '@/components/admin/AdminPlaceModal';
 import AdminHomeMediaTab from '@/components/admin/AdminHomeMediaTab';
+import AdminSocialMediaTab from '@/components/admin/AdminSocialMediaTab';
 import AdminItinerariesTab from '@/components/admin/AdminItinerariesTab';
 import AdminCarModal from '@/components/admin/AdminCarModal';
 import CrmDashboard from '@/components/admin/CrmDashboard';
@@ -68,6 +70,7 @@ const ADMIN_CONSOLE_GUIDE: { tab: string; label: string; detail: string }[] = [
   { tab: 'cabs', label: 'Cabs', detail: 'Sightseeing and transfer plans shown on the cab section of the site.' },
   { tab: 'car-rental', label: 'Car rental', detail: 'Self-drive fleet cards and rates for the car rental page.' },
   { tab: 'home-media', label: 'Home page media', detail: 'Hero images and clips wired to the public homepage.' },
+  { tab: 'social-media', label: 'Social & videos', detail: 'Public /social page: Instagram, Facebook, YouTube links, embeds, and gallery images.' },
   { tab: 'faqs', label: 'Chatbot FAQs', detail: 'Answers the on-site assistant can use; keep them aligned with live policies.' },
   { tab: 'users', label: 'Users', detail: 'Portal logins: create staff accounts and control who can open admin vs CRM.' },
 ];
@@ -120,6 +123,7 @@ export default function AdminPanel() {
       { id: 'cabs', label: 'Cabs', icon: Car },
       { id: 'car-rental', label: 'Car Rental', icon: Car },
       { id: 'home-media', label: 'Home page media', icon: Home },
+      { id: 'social-media', label: 'Social & videos', icon: Share2 },
       { id: 'crm', label: 'CRM', icon: ClipboardList },
       { id: 'faqs', label: 'Chatbot FAQs', icon: HelpCircle },
       { id: 'users', label: 'Users', icon: Users },
@@ -499,7 +503,8 @@ export default function AdminPanel() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        alert(json.error || 'Failed to create employee');
+        const msg = [json.error, json.hint].filter(Boolean).join('\n\n');
+        alert(msg || 'Failed to create employee');
         return;
       }
       setNewEmployeeEmail('');
@@ -1326,6 +1331,7 @@ export default function AdminPanel() {
           )}
 
           {activeTab === 'home-media' && isAdmin && <AdminHomeMediaTab />}
+          {activeTab === 'social-media' && isAdmin && <AdminSocialMediaTab />}
 
           {/* CRM now lives in /crm */}
 

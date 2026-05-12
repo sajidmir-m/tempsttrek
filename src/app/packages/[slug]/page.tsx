@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/Toast';
 import { sendEmail, generateInquiryEmail, generateBookingConfirmationEmail } from '@/lib/email';
 
 import { MOCK_PACKAGES } from '@/data/packages';
+import { formatInr } from '@/lib/format-currency';
 
 function getMockPackage(slug: string) {
   return MOCK_PACKAGES.find(p => p.slug === slug);
@@ -204,7 +205,7 @@ export default function PackageDetail({ params }: { params: Promise<{ slug: stri
               <span>{pkg.location}</span>
             </div>
             <div className="flex items-center gap-2 font-bold text-teal-300">
-              <span>Starting from ₹{pkg.price.toLocaleString()}</span>
+              <span>Starting from ₹{formatInr(Number(pkg.price))}</span>
             </div>
           </div>
         </div>

@@ -92,7 +92,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3">
-              <div className="relative w-11 h-11 rounded-full bg-white/90 overflow-hidden border border-white/40 shadow-sm">
+              <div className="relative w-14 h-14 rounded-full bg-white/90 overflow-hidden border border-white/40 shadow-sm">
                 <Image src="/logo.png" alt="Tempest Treks" fill className="object-contain p-1" priority />
               </div>
               <div className="flex flex-col">

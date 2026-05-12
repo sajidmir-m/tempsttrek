@@ -10,6 +10,7 @@ import { fetchHomeContentFromDb } from "@/lib/fetch-home-content";
 import { placeSlugKey } from "@/lib/home-content";
 
 import { MOCK_PACKAGES } from "@/data/packages";
+import { formatInr } from "@/lib/format-currency";
 
 /** Always read latest homepage CMS from Supabase (no static cache). */
 export const dynamic = "force-dynamic";
@@ -382,7 +383,7 @@ export default async function Home() {
                               {pkg.duration}
                             </span>
                             <span className="text-xs text-gray-700">
-                              Starting from ₹{pkg.price?.toLocaleString()}
+                              Starting from ₹{formatInr(Number(pkg.price ?? 0))}
                             </span>
                           </p>
                           <p className="text-sm text-gray-800 line-clamp-3">{pkg.description}</p>

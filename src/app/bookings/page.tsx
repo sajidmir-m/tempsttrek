@@ -309,12 +309,12 @@ export default function CustomerPortal() {
                         </Link>
                       )}
                       <a
-                        href="https://wa.me/919906646113"
+                        href="https://wa.me/917006796123"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-4 py-2 bg-green-50 text-green-700 rounded-lg font-medium hover:bg-green-100 transition-colors text-center"
                       >
-                        Our WhatsApp: +91 9906646113
+                        Our WhatsApp: +91 7006796123
                       </a>
                     </div>
                   </div>

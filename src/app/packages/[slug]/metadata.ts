@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabase';
 import { MOCK_PACKAGES } from '@/data/packages';
+import { formatInr } from '@/lib/format-currency';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `${pkg.title} | Tempesttrek`,
     description:
       pkg.description ||
-      `Book ${pkg.title} - ${pkg.duration} tour package starting from ₹${pkg.price.toLocaleString()}. Experience ${pkg.location} with Tempesttrek.`,
+      `Book ${pkg.title} - ${pkg.duration} tour package starting from ₹${formatInr(Number(pkg.price))}. Experience ${pkg.location} with Tempesttrek.`,
     keywords: `Kashmir tour, ${pkg.location}, ${pkg.title}, tour package, Tempesttrek`,
     openGraph: {
       title: pkg.title,

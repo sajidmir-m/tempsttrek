@@ -3,28 +3,24 @@ import Link from 'next/link';
 import Image from 'next/image';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import { Facebook, Instagram, Youtube, ArrowLeft } from 'lucide-react';
-import { SOCIAL_LINKS } from '@/lib/social-links';
+import { fetchSocialPageFromDb } from '@/lib/fetch-social-page';
 
-export const metadata: Metadata = {
-  title: 'Social & Media | Instagram · Facebook · YouTube | Tempesttrek',
-  description:
-    'Follow Tempesttrek on Instagram, Facebook, and YouTube. Watch Kashmir trip clips and browse photo highlights.',
-};
+export const dynamic = 'force-dynamic';
 
-/** Add `{ title, youtubeId }` entries to show embedded players (youtube-nocookie). */
-const YOUTUBE_VIDEOS: { title: string; youtubeId: string }[] = [];
+export async function generateMetadata(): Promise<Metadata> {
+  const cfg = await fetchSocialPageFromDb();
+  return {
+    title: `${cfg.heroTitle} | Instagram · Facebook · YouTube | Tempesttrek`,
+    description: `${cfg.heroSubtitle} Follow on Instagram, Facebook, and YouTube.`,
+  };
+}
 
-/** Paths under `public/` — swap for your originals. */
-const GALLERY_IMAGES: { src: string; alt: string }[] = [
-  { src: '/WhatsApp Image 2026-05-11 at 2.34.56 PM.jpeg', alt: 'Tempesttrek Kashmir moment' },
-  { src: '/videos/adventure-1.png', alt: 'Snowy valley and traveller' },
-  { src: '/videos/adventure-2.png', alt: 'Mountain lake vista' },
-  { src: '/videos/adventure-1.png', alt: 'Another moment from our tours' },
-];
+export default async function SocialPage() {
+  const cfg = await fetchSocialPageFromDb();
+  const links = cfg.links!;
 
-export default function SocialPage() {
   return (
-    <div className="bg-gray-50 min-h-screen pt-28 pb-20">
+    <div className="bg-gray-50 min-h-screen pb-20">
       <div className="max-w-6xl mx-auto px-4">
         <ScrollReveal width="100%">
           <Link
@@ -39,14 +35,11 @@ export default function SocialPage() {
         <ScrollReveal width="100%">
           <div className="rounded-3xl bg-gradient-to-r from-emerald-800 via-teal-700 to-sky-800 text-white px-6 py-12 md:px-12 md:py-14 mb-12">
             <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-100 mb-3">Stay connected</p>
-            <h1 className="text-3xl md:text-5xl font-extrabold mb-4">Tempesttrek on social media</h1>
-            <p className="text-lg text-white/90 max-w-2xl mb-10">
-              Daily reels and photos from the mountains, ride-along snippets, and longer trip edits. Follow wherever
-              you scroll most—we publish across Instagram, Facebook, and YouTube.
-            </p>
+            <h1 className="text-3xl md:text-5xl font-extrabold mb-4">{cfg.heroTitle}</h1>
+            <p className="text-lg text-white/90 max-w-2xl mb-10">{cfg.heroSubtitle}</p>
             <div className="flex flex-wrap gap-4">
               <a
-                href={SOCIAL_LINKS.instagram}
+                href={links.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 rounded-xl bg-white text-emerald-900 px-5 py-3 text-sm font-semibold hover:bg-emerald-50"
@@ -55,7 +48,7 @@ export default function SocialPage() {
                 Instagram
               </a>
               <a
-                href={SOCIAL_LINKS.facebook}
+                href={links.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 rounded-xl bg-white/15 backdrop-blur border border-white/40 px-5 py-3 text-sm font-semibold hover:bg-white/25"
@@ -64,7 +57,7 @@ export default function SocialPage() {
                 Facebook
               </a>
               <a
-                href={SOCIAL_LINKS.youtubeChannel}
+                href={links.youtubeChannel}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-3 text-sm font-semibold"
@@ -80,22 +73,21 @@ export default function SocialPage() {
           <ScrollReveal width="100%">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Featured videos</h2>
             <p className="text-gray-800 text-sm mb-8">
-              Hosted on YouTube. Add entries to <code className="text-emerald-800 bg-emerald-50 px-1 rounded">YOUTUBE_VIDEOS</code> in{' '}
-              <code className="text-emerald-800 bg-emerald-50 px-1 rounded">social/page.tsx</code>.
+              Managed from <span className="font-semibold text-emerald-800">Admin → Social &amp; videos</span>. Add
+              YouTube video IDs to embed players here.
             </p>
           </ScrollReveal>
-          {YOUTUBE_VIDEOS.length === 0 ? (
+          {cfg.youtubeVideos!.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/50 px-6 py-10 text-center text-sm text-gray-800">
-              No videos configured yet. Use your YouTube video IDs (the part after <code className="text-xs">watch?v=</code>) in{' '}
-              <code className="text-xs text-emerald-800">YOUTUBE_VIDEOS</code>, or open your{' '}
-              <a href={SOCIAL_LINKS.youtubeChannel} className="text-sky-700 font-semibold hover:underline">
-                YouTube channel
+              No videos configured yet. Add embeds in the admin panel, or browse{' '}
+              <a href={links.youtubeChannel} className="text-sky-700 font-semibold hover:underline">
+                your YouTube channel
               </a>
               .
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-8">
-              {YOUTUBE_VIDEOS.map((v, index) => (
+              {cfg.youtubeVideos!.map((v, index) => (
                 <ScrollReveal key={v.youtubeId + index} delay={index * 0.08}>
                   <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
                     <p className="px-4 pt-4 text-sm font-semibold text-gray-900">{v.title}</p>
@@ -119,11 +111,12 @@ export default function SocialPage() {
           <ScrollReveal width="100%">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Photos</h2>
             <p className="text-gray-800 text-sm mb-8">
-              Snapshot grid from public assets—you can swap paths in <code className="text-emerald-800 bg-emerald-50 px-1 rounded">GALLERY_IMAGES</code>.
+              Gallery images are edited in <span className="font-semibold text-emerald-800">Admin → Social &amp; videos</span>
+              .
             </p>
           </ScrollReveal>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-            {GALLERY_IMAGES.map((img, index) => (
+            {cfg.galleryImages!.map((img, index) => (
               <ScrollReveal key={img.src + index} delay={index * 0.05}>
                 <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-emerald-100 bg-gray-200 shadow-sm">
                   <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="(max-width:768px) 50vw, 33vw" />

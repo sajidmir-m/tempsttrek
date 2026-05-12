@@ -78,7 +78,7 @@ export default function ContactPage() {
 
   return (
     <div className="bg-gray-50">
-      <div className="bg-teal-700 text-white pt-28 py-20 px-4 text-center">
+      <div className="bg-teal-700 text-white py-20 px-4 text-center">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
         <p className="text-xl max-w-2xl mx-auto opacity-90">Have questions? We'd love to hear from you.</p>
       </div>

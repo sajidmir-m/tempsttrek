@@ -42,7 +42,7 @@ export default function Hero({ heroSlides }: HeroProps) {
   if (!current) return null;
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-black pt-[6.5rem] sm:pt-[7rem] box-border">
+    <div className="relative min-h-[calc(100dvh-var(--site-navbar-offset))] w-full overflow-hidden bg-black box-border">
       <AnimatePresence mode="wait">
         <motion.div
           key={`${current.src}-${currentIndex}`}

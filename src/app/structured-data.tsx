@@ -13,9 +13,9 @@ export default function StructuredData() {
     logo: `${baseUrl}/logo.png`,
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+91-6005107475',
+      telephone: '+91-7006796123',
       contactType: 'Customer Service',
-      email: 'mirbabatourtravels@gmail.com',
+      email: 'info@tempesttreks.in',
       areaServed: 'IN',
       availableLanguage: ['English', 'Hindi', 'Kashmiri'],
     },

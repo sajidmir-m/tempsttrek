@@ -8,17 +8,54 @@ export const MOCK_PACKAGES = [
     price: 12500,
     featured_image: "",
     location: "Srinagar, Gulmarg, Pahalgam",
-    description: "Experience the best of Kashmir in 5 days. Visit the famous Dal Lake, the meadows of Gulmarg, and the valleys of Pahalgam.",
-    inclusions: ["Accommodation in 3-star hotels", "Daily Breakfast & Dinner", "All transfers by private cab", "Shikara Ride on Dal Lake", "Toll taxes and parking"],
-    exclusions: ["Airfare", "Lunch", "Personal expenses", "Pony rides / Activities", "GST"],
-    itinerary: [
-      { day: 1, title: "Arrival in Srinagar", desc: "Pickup from airport, transfer to Houseboat. Evening Shikara ride." },
-      { day: 2, title: "Srinagar to Gulmarg", desc: "Day trip to Gulmarg. Enjoy Gondola ride (optional)." },
-      { day: 3, title: "Srinagar to Pahalgam", desc: "Drive to Pahalgam. Visit Aru Valley and Betaab Valley." },
-      { day: 4, title: "Pahalgam to Srinagar", desc: "Return to Srinagar. Local sightseeing (Mughal Gardens)." },
-      { day: 5, title: "Departure", desc: "Transfer to airport for departure." }
+    description:
+      "Five days across Dal Lake, alpine Gulmarg, and the Lidder valley—balanced pacing, private transfers, and hand-picked stays so you see Kashmir without rushing.",
+    inclusions: [
+      "Accommodation on twin/double sharing (3★ or equivalent hotels / houseboat as per plan)",
+      "Daily breakfast and dinner at the hotel (set menu / buffet as per property)",
+      "Private non-AC cab for all transfers and sightseeing as per itinerary (tolls & parking included)",
+      "Shikara ride on Dal Lake (approx. 1 hour, shared boat unless upgraded)",
+      "All currently applicable hotel taxes (GST extra—see exclusions)",
+      "Airport / railway station meet-and-assist on arrival and departure day",
+      "Driver allowance and night halt charges for the vehicle on tour",
     ],
-    is_popular: true
+    exclusions: [
+      "Air or rail tickets to/from Srinagar",
+      "Lunch on all days (guests may order à la carte or explore local cafés)",
+      "Gulmarg Gondola tickets (Phase 1 / 2), pony rides, sledging, and other activity charges",
+      "Garden / monument entry fees, camera fees, and guide charges if hired separately",
+      "Travel insurance, medical expenses, and personal expenses (laundry, calls, minibar)",
+      "GST / TCS as per government rules (typically billed on final invoice)",
+      "Anything not explicitly listed under inclusions",
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: "Arrival Srinagar · Dal Lake",
+        desc: "Pickup from Sheikh ul-Alam International Airport and transfer to a premium houseboat on Dal Lake. Evening Shikara ride to Char Chinar and floating gardens. Dinner on board; early night recommended after travel.",
+      },
+      {
+        day: 2,
+        title: "Srinagar → Gulmarg (day excursion)",
+        desc: "After breakfast, scenic drive to Gulmarg (~50 km). Time for Gondola (optional, tickets extra), snow activities in winter, or meadow walks in summer. Return to Srinagar by evening; dinner at hotel / houseboat.",
+      },
+      {
+        day: 3,
+        title: "Srinagar → Pahalgam",
+        desc: "Drive along the Lidder river to Pahalgam. En route optional stop at saffron fields and apple orchards (seasonal). Check-in at Pahalgam hotel; short walk on the riverside boardwalk. Dinner at hotel.",
+      },
+      {
+        day: 4,
+        title: "Pahalgam valleys · Srinagar",
+        desc: "Morning visit to Betaab Valley and Aru Valley (local union vehicles / pony where required—direct payment). Afternoon drive back to Srinagar; visit Nishat / Shalimar Mughal Gardens if time permits. Overnight Srinagar.",
+      },
+      {
+        day: 5,
+        title: "Departure",
+        desc: "Breakfast and timely transfer to airport for onward flight. End of services.",
+      },
+    ],
+    is_popular: true,
   },
   {
     id: "2",
@@ -28,18 +65,33 @@ export const MOCK_PACKAGES = [
     price: 15500,
     featured_image: "",
     location: "Srinagar, Gulmarg, Pahalgam, Sonmarg",
-    description: "A comprehensive 6-day tour covering all major destinations including the Golden Meadow, Sonmarg.",
-    inclusions: ["Accommodation in 3-star hotels", "Daily Breakfast & Dinner", "Private Cab for 6 days", "Shikara Ride", "All sightseeing"],
-    exclusions: ["Airfare", "Lunch", "Gondola Tickets", "Garden Entry Fees", "Tips"],
-    itinerary: [
-      { day: 1, title: "Arrival", desc: "Welcome to Srinagar. Transfer to Hotel." },
-      { day: 2, title: "Sonmarg Day Trip", desc: "Full day excursion to Sonmarg (Thajiwas Glacier)." },
-      { day: 3, title: "Gulmarg Excursion", desc: "Day trip to Gulmarg for snow activities." },
-      { day: 4, title: "Pahalgam Stay", desc: "Drive to Pahalgam and overnight stay." },
-      { day: 5, title: "Return to Srinagar", desc: "Back to Srinagar. Shopping and leisure." },
-      { day: 6, title: "Departure", desc: "Drop at Airport." }
+    description:
+      "Our bestselling six-night loop: Sonmarg's glaciers, Gulmarg's meadows, Pahalgam's pine forests, and Srinagar's heritage—ideal for first-timers who want depth without extreme altitude.",
+    inclusions: [
+      "6 nights' accommodation on twin sharing in 3★ hotels + 1 night houseboat (or hotel) in Srinagar as per plan",
+      "Daily breakfast and dinner",
+      "Private cab for airport transfers and inter-city moves on fixed route days",
+      "Shikara ride on Dal Lake",
+      "Parking, tolls, and driver allowance for included sectors",
+      "Basic assistance with restaurant reservations and activity timing (no extra fee)",
     ],
-    is_popular: true
+    exclusions: [
+      "Flights / trains to Srinagar",
+      "Lunch, beverages, and room service",
+      "Gondola, pony, sled, rafting, zipline, or any paid adventure",
+      "Garden entry, guide fees, and union vehicle charges in Pahalgam / Sonmarg inner points",
+      "Personal expenses, tips, porterage, and travel insurance",
+      "GST / TCS as applicable",
+    ],
+    itinerary: [
+      { day: 1, title: "Welcome to Srinagar", desc: "Airport pickup, short city orientation, check-in. Evening Shikara on Dal Lake." },
+      { day: 2, title: "Sonmarg day trip", desc: "Full-day drive to Sonmarg; optional pony to Thajiwas Glacier viewpoint (direct payment). Packed meal suggestion: carry snacks; dinner back in Srinagar." },
+      { day: 3, title: "Gulmarg", desc: "Day trip to Gulmarg; leisure time for Gondola or golf / ATV (seasonal). Return to Srinagar." },
+      { day: 4, title: "Pahalgam transfer", desc: "Scenic drive to Pahalgam; evening at leisure by the Lidder." },
+      { day: 5, title: "Pahalgam · Srinagar", desc: "Morning local walks or optional valley visits; afternoon return to Srinagar for shopping / rest." },
+      { day: 6, title: "Departure", desc: "Breakfast and airport drop." },
+    ],
+    is_popular: true,
   },
   {
     id: "3",
@@ -49,17 +101,31 @@ export const MOCK_PACKAGES = [
     price: 18999,
     featured_image: "",
     location: "Gulmarg, Pahalgam",
-    description: "Special winter package focused on snow activities and skiing in Gulmarg.",
-    inclusions: ["Heated Accommodation", "Daily Breakfast & Dinner", "Snow Chains Vehicle", "Ski Equipment Rental Discount"],
-    exclusions: ["Ski Instructor", "Gondola Phase 2", "Lunch"],
-    itinerary: [
-      { day: 1, title: "Arrival", desc: "Arrive in Srinagar, transfer to Gulmarg." },
-      { day: 2, title: "Skiing in Gulmarg", desc: "Full day for skiing and snow activities." },
-      { day: 3, title: "Gulmarg to Pahalgam", desc: "Scenic drive to Pahalgam." },
-      { day: 4, title: "Pahalgam to Srinagar", desc: "Return to Srinagar." },
-      { day: 5, title: "Departure", desc: "Transfer to airport." }
+    description:
+      "Snow-focused routing with heated stays, winter-ready vehicle, and extra time in Gulmarg for skiing or snowboarding (gear and instructors available locally).",
+    inclusions: [
+      "Heated hotel rooms on twin sharing (where available) in Gulmarg & Pahalgam sectors",
+      "Breakfast and dinner daily",
+      "4x4 / snow-chain equipped private cab for included hill drives (subject to BRO road status)",
+      "Discount voucher for partner ski rental shop (in-shop redemption; subject to season)",
+      "Driver night halt and snow-route allowances as per actual routing",
     ],
-    is_popular: true
+    exclusions: [
+      "Professional ski / snowboard instructor fees",
+      "Gondola Phase-2 and all lift tickets",
+      "Lunch, high-energy snacks, and hot beverages on slopes",
+      "Medical / rescue costs; we strongly recommend travel insurance with winter sports cover",
+      "Road closures or delays beyond our control (extra nights at actual cost)",
+      "GST / TCS",
+    ],
+    itinerary: [
+      { day: 1, title: "Arrive · Gulmarg", desc: "Airport meet; transfer to Gulmarg if Zoji / tunnel route open; otherwise night in Srinagar with next-morning transfer (weather policy applies)." },
+      { day: 2, title: "Gulmarg on snow", desc: "Full day on meadow / beginner slopes; optional lesson blocks (book locally)." },
+      { day: 3, title: "Gulmarg → Pahalgam", desc: "Scenic descent and drive to Pahalgam; relaxed evening." },
+      { day: 4, title: "Pahalgam → Srinagar", desc: "Morning photography walk; drive to Srinagar; last-minute shopping." },
+      { day: 5, title: "Fly out", desc: "Airport transfer." },
+    ],
+    is_popular: true,
   },
   {
     id: "4",
@@ -69,19 +135,33 @@ export const MOCK_PACKAGES = [
     price: 24999,
     featured_image: "",
     location: "Srinagar, Houseboat, Gulmarg, Pahalgam",
-    description: "Romantic getaway for couples with special candlelight dinner and flower decoration.",
-    inclusions: ["Honeymoon Suite", "Candlelight Dinner", "Flower Bed Decoration", "Private Shikara Ride", "Cake"],
-    exclusions: ["Flights", "Personal Expenses", "Adventure Activities"],
-    itinerary: [
-      { day: 1, title: "Welcome", desc: "Arrival and Houseboat check-in." },
-      { day: 2, title: "Romantic Srinagar", desc: "Mughal Gardens and photo shoot." },
-      { day: 3, title: "Gulmarg", desc: "Day trip to Gulmarg." },
-      { day: 4, title: "Pahalgam", desc: "Overnight in Pahalgam." },
-      { day: 5, title: "Pahalgam Leisure", desc: "Leisure day in Pahalgam." },
-      { day: 6, title: "Back to Srinagar", desc: "Shopping and relaxing." },
-      { day: 7, title: "Goodbye", desc: "Departure." }
+    description:
+      "Private transfers, romantic add-ons (candlelight dinner, flower décor), and slower pacing with buffer evenings—crafted for couples celebrating milestones.",
+    inclusions: [
+      "Honeymoon suite / room upgrade subject to availability at booking",
+      "One candlelight dinner with fixed menu (veg / non-veg choice to be pre-informed)",
+      "Flower bed decoration on arrival night (houseboat / hotel)",
+      "Private Shikara ride (exclusive boat, ~60–90 minutes)",
+      "Welcome cake once during stay",
+      "Breakfast and dinner on CP plan; private cab for itinerary days",
     ],
-    is_popular: false
+    exclusions: [
+      "Flights and airport lounge access",
+      "Lunch, champagne / wine upgrades, and premium cake customisation",
+      "Professional photoshoot, makeup, or drone permits",
+      "Adventure activities (paragliding, rafting, etc.)",
+      "GST / TCS and personal expenses",
+    ],
+    itinerary: [
+      { day: 1, title: "Arrival · Houseboat", desc: "Traditional welcome, check-in, evening Shikara." },
+      { day: 2, title: "Srinagar heritage", desc: "Mughal Gardens, old city walk (optional), romantic dinner slot." },
+      { day: 3, title: "Gulmarg", desc: "Private day trip; couple photos at viewpoints." },
+      { day: 4, title: "Pahalgam", desc: "Transfer; riverside café time." },
+      { day: 5, title: "Pahalgam leisure", desc: "Spa / walk / optional valley visit—no rush checkout." },
+      { day: 6, title: "Srinagar", desc: "Return; souvenir shopping with driver assistance." },
+      { day: 7, title: "Departure", desc: "Airport drop with packed breakfast if early flight." },
+    ],
+    is_popular: false,
   },
   {
     id: "5",
@@ -91,16 +171,28 @@ export const MOCK_PACKAGES = [
     price: 9999,
     featured_image: "",
     location: "Srinagar, Gulmarg",
-    description: "Pocket-friendly tour covering the essentials of Kashmir.",
-    inclusions: ["Budget Hotels", "Breakfast", "Sharing Transport"],
-    exclusions: ["Lunch", "Dinner", "Entry Fees"],
-    itinerary: [
-      { day: 1, title: "Arrival", desc: "Srinagar arrival." },
-      { day: 2, title: "Gulmarg", desc: "Day trip to Gulmarg." },
-      { day: 3, title: "Srinagar Sightseeing", desc: "Local sightseeing." },
-      { day: 4, title: "Departure", desc: "Airport drop." }
+    description:
+      "Essential Kashmir on a tight budget: clean guesthouse / budget hotel stays, shared transport on fixed routes, and self-managed lunches—perfect for students and backpackers.",
+    inclusions: [
+      "Budget hotel or guesthouse on multi-sharing / triple where specified (read voucher carefully)",
+      "Daily breakfast only",
+      "Shared group vehicle for fixed sightseeing days (seat rotation; fixed timings)",
+      "Driver cum coordinator for group days (not private guide)",
     ],
-    is_popular: false
+    exclusions: [
+      "Lunch and dinner (kitchen / restaurant on direct payment)",
+      "Private cab upgrades",
+      "All entry tickets, Gondola, pony, and activity charges",
+      "Room heater charges in winter (pay at hotel)",
+      "Anything not listed in inclusions",
+    ],
+    itinerary: [
+      { day: 1, title: "Arrive Srinagar", desc: "Group pickup window (timing shared on voucher); check-in; evening free." },
+      { day: 2, title: "Gulmarg group day", desc: "Shared coach to Gulmarg; free time on meadow; return by evening." },
+      { day: 3, title: "Srinagar local", desc: "Shankaracharya / gardens / old city—subset of sights as per group schedule." },
+      { day: 4, title: "Departure", desc: "Group airport drop in shared vehicle." },
+    ],
+    is_popular: false,
   },
   {
     id: "6",
@@ -110,17 +202,30 @@ export const MOCK_PACKAGES = [
     price: 35000,
     featured_image: "",
     location: "Srinagar, Pahalgam, Sonmarg",
-    description: "Stay in 5-star properties and travel in luxury SUVs.",
-    inclusions: ["5-Star Hotels", "All Meals", "Luxury SUV", "Guide", "VIP Darshan"],
-    exclusions: ["Flights", "Tips"],
-    itinerary: [
-      { day: 1, title: "Royal Welcome", "desc": "Welcome drink and 5-star check-in." },
-      { day: 2, title: "Sonmarg Luxury", "desc": "Private tour of Sonmarg." },
-      { day: 3, title: "Pahalgam Retreat", "desc": "Stay at a luxury resort in Pahalgam." },
-      { day: 4, title: "Pahalgam Leisure", "desc": "Golfing or relaxing." },
-      { day: 5, title: "Srinagar Grandeur", "desc": "Grand houseboat stay." },
-      { day: 6, title: "Departure", "desc": "VIP airport drop." }
+    description:
+      "Five-star or boutique palace stays, Toyota Innova Crysta / Fortuner class SUV, curated dining reservations, and optional English-speaking escort on request (extra).",
+    inclusions: [
+      "5★ / boutique palace hotels on twin sharing (named or category upgrade on availability)",
+      "All major meals (breakfast, lunch, dinner) unless you prefer room credit",
+      "Luxury SUV with uniformed driver, bottled water, and Wi-Fi dongle where network allows",
+      "Priority assistance for Gondola time slots (tickets billed as extra unless pre-purchased)",
+      "Airport VIP greeter on arrival (subject to airport policy)",
     ],
-    is_popular: false
-  }
+    exclusions: [
+      "Flights (we can suggest fares; booking on your card)",
+      "Premium beverages, truffle / caviar supplements, and minibar",
+      "Monument guides unless pre-booked as add-on",
+      "Tips for driver / bell desk (industry norm 300–500 INR/day driver)",
+      "GST / TCS",
+    ],
+    itinerary: [
+      { day: 1, title: "Royal welcome", desc: "Chauffeur meet, welcome drink, palace check-in, sunset high tea." },
+      { day: 2, title: "Sonmarg private", desc: "Late breakfast, scenic drive, optional glacier visit with packed gourmet lunch." },
+      { day: 3, title: "Pahalgam retreat", desc: "Resort check-in; spa credit if part of promo; private riverside dinner setup." },
+      { day: 4, title: "Pahalgam at leisure", desc: "Golf tee time assistance / nature walk / library day—your pace." },
+      { day: 5, title: "Srinagar grandeur", desc: "Heritage houseboat or luxury hotel; curated old-city food trail (optional)." },
+      { day: 6, title: "Departure", desc: "Assisted checkout and airport transfer in premium vehicle." },
+    ],
+    is_popular: false,
+  },
 ];

@@ -37,7 +37,7 @@ export default async function PlacesPage() {
   const places = await getPlaces();
 
   return (
-    <div className="bg-gray-50 min-h-screen pt-28 pb-20">
+    <div className="bg-gray-50 min-h-screen pb-20">
       <section className="px-4">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal width="100%">

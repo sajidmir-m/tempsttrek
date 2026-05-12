@@ -7,6 +7,19 @@ import { supabase } from '@/lib/supabase';
 import { Plus, Save, Trash2, Loader2, UploadCloud, FileText } from 'lucide-react';
 import type { CRMItineraryAssetRow, CRMItineraryRow, ItineraryDay, ItinerarySections } from './types';
 
+function isMissingCrmItineraryAssetsTable(err: unknown): boolean {
+  const msg =
+    typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message: unknown }).message === 'string'
+      ? (err as { message: string }).message
+      : String(err);
+  const m = msg.toLowerCase();
+  return (
+    m.includes('crm_itinerary_assets') ||
+    (m.includes('could not find') && m.includes('schema cache')) ||
+    m.includes('pgrst205')
+  );
+}
+
 const defaultSections = (): ItinerarySections => ({
   days: [
     { day: 1, title: 'Arrival & Srinagar', body: '' },
@@ -59,6 +72,7 @@ export default function ItineraryEditor({
     cover_image_url: '',
   });
   const [assets, setAssets] = useState<CRMItineraryAssetRow[]>([]);
+  const [assetsTableMissing, setAssetsTableMissing] = useState(false);
   const [newInc, setNewInc] = useState('');
   const [newExc, setNewExc] = useState('');
 
@@ -66,6 +80,7 @@ export default function ItineraryEditor({
 
   const load = async () => {
     setLoading(true);
+    setAssetsTableMissing(false);
     try {
       if (!itineraryId) {
         setRow((p) => ({ ...p, sections: defaultSections() }));
@@ -85,8 +100,16 @@ export default function ItineraryEditor({
         .eq('itinerary_id', itineraryId)
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
-      if (aErr) throw aErr;
-      setAssets((a || []) as CRMItineraryAssetRow[]);
+      if (aErr) {
+        if (isMissingCrmItineraryAssetsTable(aErr)) {
+          setAssets([]);
+          setAssetsTableMissing(true);
+        } else {
+          throw aErr;
+        }
+      } else {
+        setAssets((a || []) as CRMItineraryAssetRow[]);
+      }
     } catch (e: any) {
       alert('Failed to load itinerary: ' + (e?.message || String(e)));
     } finally {
@@ -177,6 +200,12 @@ export default function ItineraryEditor({
   };
 
   const uploadImage = async (file: File) => {
+    if (assetsTableMissing) {
+      alert(
+        'The database table crm_itinerary_assets is missing. Run the SQL migration supabase/migrations/20260516_ensure_crm_itinerary_assets.sql in the Supabase SQL Editor (or supabase db push), then reload this page.'
+      );
+      return;
+    }
     if (!itineraryId) {
       alert('Save itinerary first, then upload images.');
       return;
@@ -252,6 +281,19 @@ export default function ItineraryEditor({
           </button>
         </div>
       </div>
+
+      {assetsTableMissing ? (
+        <div className="mx-6 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <p className="font-semibold">Itinerary images are unavailable</p>
+          <p className="mt-1 text-amber-900/90">
+            Your project is missing the table <code className="text-xs bg-white/80 px-1 rounded border border-amber-200">public.crm_itinerary_assets</code>.
+            In Supabase: <strong>SQL Editor</strong> → paste and run{' '}
+            <code className="text-xs bg-white/80 px-1 rounded border border-amber-200">supabase/migrations/20260516_ensure_crm_itinerary_assets.sql</code>{' '}
+            (or run <code className="text-xs bg-white/80 px-1 rounded">supabase db push</code>). Then reload this page. You can still edit and save the itinerary
+            text below.
+          </p>
+        </div>
+      ) : null}
 
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -447,7 +489,11 @@ export default function ItineraryEditor({
                 Upload images to Supabase Storage bucket <code className="text-[11px] bg-white border px-1 rounded">itineraries</code>.
               </p>
             </div>
-            <label className="inline-flex items-center gap-2 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 px-4 py-2.5 text-sm font-semibold cursor-pointer">
+            <label
+              className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold ${
+                assetsTableMissing ? 'cursor-not-allowed opacity-50 border-gray-100 bg-gray-100' : 'bg-white border-gray-200 hover:bg-gray-50 cursor-pointer'
+              }`}
+            >
               <UploadCloud size={16} />
               {uploading ? 'Uploading…' : 'Upload image'}
               <input
@@ -459,7 +505,7 @@ export default function ItineraryEditor({
                   if (f) void uploadImage(f);
                   e.currentTarget.value = '';
                 }}
-                disabled={uploading}
+                disabled={uploading || assetsTableMissing}
               />
             </label>
           </div>

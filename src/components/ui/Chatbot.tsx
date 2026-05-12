@@ -38,7 +38,7 @@ const knowledgeBase = [
   },
   {
     keywords: ['contact', 'phone', 'email', 'call', 'reach', 'number'],
-    answer: "You can reach us directly:\n📞 **Call (Priority):** +91 6005107475\n💬 **Our WhatsApp:** +91 9906646113\n📧 **Email:** mirbabatourtravels@gmail.com\n📍 **Office:** Srinagar, Kashmir."
+    answer: "You can reach us directly:\n📞 **Call (Priority):** +91 7006796123\n💬 **Our WhatsApp:** +91 7006796123\n📧 **Email:** info@tempesttreks.in\n📍 **Office:** Srinagar, Kashmir."
   },
   {
     keywords: ['safety', 'safe', 'security'],
@@ -268,12 +268,12 @@ export default function Chatbot() {
               </div>
               <div className="mt-3 text-center">
                 <a
-                  href="https://wa.me/919906646113"
+                  href="https://wa.me/917006796123"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-xs font-semibold text-teal-600 hover:text-teal-700 hover:underline transition-colors bg-teal-50 px-3 py-1 rounded-full"
                 >
-                  <Phone size={12} /> Our WhatsApp: +91 9906646113
+                  <Phone size={12} /> Our WhatsApp: +91 7006796123
                 </a>
               </div>
             </div>

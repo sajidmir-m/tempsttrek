@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Clock, MapPin, ArrowRight, Snowflake } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatInr } from '@/lib/format-currency';
 
 interface PackageProps {
   id: string;
@@ -61,7 +62,7 @@ export default function PackageCard({ id, title, duration, price, image, slug, l
         <div className="pt-4 border-t border-gray-200 flex items-center justify-between mt-auto">
           <div>
             <p className="text-xs text-gray-600 uppercase font-medium">Starting from</p>
-            <p className="text-xl font-bold text-sky-700">₹{price.toLocaleString()}</p>
+            <p className="text-xl font-bold text-sky-700">₹{formatInr(price)}</p>
           </div>
           
           <Link 

@@ -28,9 +28,9 @@ interface AdminPackageModalProps {
   packageData?: Package | null;
 }
 
-export default function AdminPackageModal({ isOpen, onClose, onSave, packageData }: AdminPackageModalProps) {
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<Package>({
+/** DB rows may have null arrays; keeps form state safe for .map() and avoids hydration drift. */
+function coercePackage(pkg: Partial<Package> | null | undefined): Package {
+  const empty: Package = {
     title: '',
     slug: '',
     duration: '',
@@ -42,7 +42,32 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
     itinerary: [],
     is_popular: false,
     featured_image: '',
-  });
+  };
+  if (!pkg) return empty;
+
+  const priceRaw = pkg.price;
+  const priceNum = typeof priceRaw === 'number' && !Number.isNaN(priceRaw) ? priceRaw : Number(priceRaw) || 0;
+
+  return {
+    ...empty,
+    ...pkg,
+    price: priceNum,
+    title: pkg.title ?? '',
+    slug: pkg.slug ?? '',
+    duration: pkg.duration ?? '',
+    location: pkg.location ?? '',
+    description: pkg.description ?? '',
+    featured_image: pkg.featured_image ?? '',
+    inclusions: Array.isArray(pkg.inclusions) ? pkg.inclusions : [],
+    exclusions: Array.isArray(pkg.exclusions) ? pkg.exclusions : [],
+    itinerary: Array.isArray(pkg.itinerary) ? pkg.itinerary : [],
+    is_popular: Boolean(pkg.is_popular),
+  };
+}
+
+export default function AdminPackageModal({ isOpen, onClose, onSave, packageData }: AdminPackageModalProps) {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<Package>(() => coercePackage(null));
 
   // State for temporary inputs
   const [newInclusion, setNewInclusion] = useState('');
@@ -53,22 +78,9 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
 
   useEffect(() => {
     if (packageData) {
-      setFormData(packageData);
+      setFormData(coercePackage(packageData));
     } else {
-      // Reset form for new package
-      setFormData({
-        title: '',
-        slug: '',
-        duration: '',
-        price: 0,
-        location: '',
-        description: '',
-        inclusions: [],
-        exclusions: [],
-        itinerary: [],
-        is_popular: false,
-        featured_image: '',
-      });
+      setFormData(coercePackage(null));
     }
   }, [packageData, isOpen]);
 
@@ -107,7 +119,7 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
     
     setFormData(prev => ({
       ...prev,
-      [type]: [...prev[type], value]
+      [type]: [...(prev[type] ?? []), value],
     }));
     
     if (type === 'inclusions') setNewInclusion('');
@@ -117,7 +129,7 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
   const removeItem = (type: 'inclusions' | 'exclusions', index: number) => {
     setFormData(prev => ({
       ...prev,
-      [type]: prev[type].filter((_, i) => i !== index)
+      [type]: (prev[type] ?? []).filter((_, i) => i !== index),
     }));
   };
 
@@ -126,9 +138,10 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
     if (!itineraryDay.title || !itineraryDay.desc) return;
 
     setFormData(prev => {
-      const nextIndex = prev.itinerary.length;
+      const list = prev.itinerary ?? [];
+      const nextIndex = list.length;
       const newItinerary = [
-        ...prev.itinerary,
+        ...list,
         { ...itineraryDay, day: nextIndex + 1 },
       ];
 
@@ -150,7 +163,7 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
 
   const removeItineraryDay = (index: number) => {
     setFormData(prev => {
-      const filtered = prev.itinerary.filter((_, i) => i !== index);
+      const filtered = (prev.itinerary ?? []).filter((_, i) => i !== index);
       const normalized = filtered.map((d, idx) => ({
         ...d,
         day: idx + 1,
@@ -172,16 +185,15 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
         // Update
         const { error } = await firebaseClient
           .from('packages')
-          .update(formData)
+          .update(coercePackage(formData))
           .eq('id', packageData.id);
         if (error) throw error;
       } else {
         // Create
         // Generate slug from title if empty
         const slug = formData.slug || formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-        const { error } = await firebaseClient
-          .from('packages')
-          .insert([{ ...formData, slug }]);
+        const payload = coercePackage({ ...formData, slug });
+        const { error } = await firebaseClient.from('packages').insert([payload]);
         if (error) throw error;
       }
       onSave();
@@ -265,7 +277,7 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
                 <button type="button" onClick={() => addItem('inclusions')} className="p-2 bg-green-600 text-white rounded-lg"><Plus size={18} /></button>
               </div>
               <ul className="space-y-1">
-                {formData.inclusions.map((item, idx) => (
+                {(formData.inclusions ?? []).map((item, idx) => (
                   <li key={idx} className="flex justify-between bg-white p-2 rounded border text-sm">
                     {item}
                     <button type="button" onClick={() => removeItem('inclusions', idx)} className="text-red-500"><Trash size={14} /></button>
@@ -282,7 +294,7 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
                 <button type="button" onClick={() => addItem('exclusions')} className="p-2 bg-red-600 text-white rounded-lg"><Plus size={18} /></button>
               </div>
               <ul className="space-y-1">
-                {formData.exclusions.map((item, idx) => (
+                {(formData.exclusions ?? []).map((item, idx) => (
                   <li key={idx} className="flex justify-between bg-white p-2 rounded border text-sm">
                     {item}
                     <button type="button" onClick={() => removeItem('exclusions', idx)} className="text-red-500"><Trash size={14} /></button>
@@ -300,11 +312,11 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
                 <input type="text" placeholder="Description" value={itineraryDay.desc} onChange={e => setItineraryDay({...itineraryDay, desc: e.target.value})} className="px-3 py-2 border rounded-lg md:col-span-2" />
              </div>
              <button type="button" onClick={addItineraryDay} className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm flex items-center gap-2">
-                <Plus size={16} /> Add Day {formData.itinerary.length + 1}
+                <Plus size={16} /> Add Day {(formData.itinerary ?? []).length + 1}
              </button>
              
              <div className="space-y-2">
-                {formData.itinerary.map((day: any, idx) => (
+                {(formData.itinerary ?? []).map((day: any, idx) => (
                    <div key={idx} className="flex gap-4 p-3 bg-gray-50 rounded-lg border">
                       <span className="font-bold w-16">Day {day.day}</span>
                       <div className="flex-1">

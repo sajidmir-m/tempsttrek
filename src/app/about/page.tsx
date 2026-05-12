@@ -1,5 +1,5 @@
+import Image from 'next/image';
 import SectionHeading from '@/components/ui/SectionHeading';
-import SiteHeroBackgroundLayers from '@/components/ui/SiteHeroBackgroundLayers';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,11 +12,22 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <div className="bg-white">
-      <div className="relative overflow-hidden bg-emerald-950 text-white pt-28 py-20 px-4 text-center">
-        <SiteHeroBackgroundLayers overlay="emerald" />
-        <div className="relative z-10">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About Tempesttrek</h1>
-          <p className="text-xl max-w-2xl mx-auto opacity-90">
+      <div className="relative overflow-hidden text-white min-h-[300px] md:min-h-[400px] flex flex-col items-center justify-center py-20 px-4 text-center">
+        <Image
+          src="/gem.png"
+          alt="Kashmir valley — mountains, river, and village"
+          fill
+          className="object-cover object-center scale-[1.02]"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/45 via-teal-900/35 to-emerald-950/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25" />
+        <div className="relative z-10 max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 [text-shadow:0_2px_28px_rgba(0,0,0,0.85),0_1px_4px_rgba(0,0,0,0.9)]">
+            About Tempesttrek
+          </h1>
+          <p className="text-xl md:text-2xl max-w-2xl mx-auto text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.82),0_1px_3px_rgba(0,0,0,0.85)] leading-relaxed">
             Your trusted partner from Srinagar for exploring the paradise on earth – Kashmir.
           </p>
         </div>
@@ -72,8 +83,8 @@ export default function AboutPage() {
               </p>
               <p className="text-sm text-gray-700 mt-4">
                 <span className="font-semibold">Phone (Primary):</span>{' '}
-                <a href="tel:+916005107475" className="text-emerald-700 font-semibold">
-                  +91 6005107475
+                <a href="tel:+917006796123" className="text-emerald-700 font-semibold">
+                  +91 7006796123
                 </a>
               </p>
             </div>
@@ -87,12 +98,12 @@ export default function AboutPage() {
               <p className="text-sm text-gray-700">
                 <span className="font-semibold">WhatsApp (Support):</span>{' '}
                 <a
-                  href="https://wa.me/919906646113"
+                  href="https://wa.me/917006796123"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sky-800 font-semibold hover:underline"
                 >
-                  +91 9906646113
+                  +91 7006796123
                 </a>
               </p>
             </div>

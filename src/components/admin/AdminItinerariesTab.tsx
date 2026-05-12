@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
-import { Plus, Trash2, Save, ClipboardList } from 'lucide-react';
+import { Plus, Trash2, Save, ClipboardList, FileDown } from 'lucide-react';
 
 export type CRMItinerary = {
   id: string;
@@ -258,7 +258,17 @@ export default function AdminItinerariesTab({ canDelete }: { canDelete: boolean 
                   <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">{r.status}</span>
                 </td>
                 <td className="px-5 py-3 text-right space-x-2">
-                  <button type="button" className="text-teal-600 font-semibold" onClick={() => openExisting(r)}>
+                  <a
+                    href={`/crm/itineraries/${r.id}/print`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sky-700 font-semibold hover:underline"
+                    title="Opens printable view — use Print / Save as PDF in the browser"
+                  >
+                    <FileDown size={14} aria-hidden />
+                    PDF
+                  </a>
+                  <button type="button" className="text-teal-600 font-semibold ml-2" onClick={() => openExisting(r)}>
                     Edit
                   </button>
                   {canDelete && (

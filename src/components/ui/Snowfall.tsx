@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 
 export default function Snowfall() {
-  const [snowflakes, setSnowflakes] = useState<{ id: number; left: number; animationDuration: number; opacity: number }[]>([]);
+  const [snowflakes, setSnowflakes] = useState<
+    { id: number; left: number; animationDuration: number; opacity: number; fontSize: number }[]
+  >([]);
 
   useEffect(() => {
     const count = 50; // Number of snowflakes
@@ -14,6 +16,7 @@ export default function Snowfall() {
         left: Math.random() * 100, // Random horizontal position
         animationDuration: Math.random() * 3 + 2, // Random speed (2-5s)
         opacity: Math.random(),
+        fontSize: Math.random() * 10 + 10,
       });
     }
     setSnowflakes(flakes);
@@ -29,7 +32,7 @@ export default function Snowfall() {
             left: `${flake.left}%`,
             animationDuration: `${flake.animationDuration}s`,
             opacity: flake.opacity,
-            fontSize: `${Math.random() * 10 + 10}px`,
+            fontSize: `${flake.fontSize}px`,
           }}
         >
           ❄

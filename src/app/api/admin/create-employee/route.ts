@@ -34,7 +34,10 @@ export async function POST(req: Request) {
       admin = createSupabaseAdmin();
     } catch {
       return NextResponse.json(
-        { error: 'Server is not configured with SUPABASE_SERVICE_ROLE_KEY. Add it to your environment.' },
+        {
+          error: 'Server is not configured with SUPABASE_SERVICE_ROLE_KEY. Add it to your environment.',
+          hint: 'Add SUPABASE_SERVICE_ROLE_KEY from Supabase → Project Settings → API → service_role (secret) to .env.local on your machine (or your host’s env vars), then restart the Next.js server.',
+        },
         { status: 500 }
       );
     }

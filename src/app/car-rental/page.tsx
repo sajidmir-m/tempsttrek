@@ -118,25 +118,35 @@ export default async function CarRentalPage() {
   const cars = await fetchCars();
 
   return (
-    <div className="bg-gray-50 min-h-screen pt-28 pb-20">
+    <div className="bg-gray-50 min-h-screen pb-20">
       <section className="px-4">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal width="100%">
-            <div className="rounded-3xl overflow-hidden mb-10 bg-gradient-to-r from-emerald-800 via-teal-700 to-sky-800 text-white px-6 py-12 md:px-14 md:py-14 relative">
-              <div className="absolute inset-0 opacity-25" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
-              <div className="relative">
-                <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-100 mb-3">
+            <div className="rounded-3xl overflow-hidden mb-10 text-white px-6 py-12 md:px-14 md:py-14 relative min-h-[320px] md:min-h-[380px] flex flex-col justify-center">
+              <Image
+                src="/Gemini_Generated_Image_5iocyp5iocyp5ioc.png"
+                alt=""
+                fill
+                className="object-cover scale-[1.02]"
+                sizes="100vw"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/55 via-teal-900/35 to-sky-950/50" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25" />
+              <div className="relative z-10">
+                <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-50 mb-3 [text-shadow:0_1px_8px_rgba(0,0,0,0.75)]">
                   Car rental • Kashmir
                 </p>
-                <h1 className="text-3xl md:text-5xl font-extrabold mb-3 max-w-3xl">
+                <h1 className="text-3xl md:text-5xl font-extrabold mb-3 max-w-3xl [text-shadow:0_2px_28px_rgba(0,0,0,0.85),0_1px_4px_rgba(0,0,0,0.9)]">
                   Choose the right car for your route
                 </h1>
-                <p className="text-white/90 max-w-2xl mb-7">
-                  From comfortable sedans to 4x4 adventures and family MPVs—book with transparent pricing and fast confirmation.
+                <p className="text-white max-w-2xl mb-7 [text-shadow:0_2px_14px_rgba(0,0,0,0.8)]">
+                  From comfortable sedans to 4x4 adventures and family MPVs—book with transparent pricing and fast
+                  confirmation.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <a
-                    href="https://wa.me/919906646113"
+                    href="https://wa.me/917006796123"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-emerald-900 px-5 py-3 text-sm font-semibold hover:bg-emerald-50 transition-colors"
@@ -233,7 +243,7 @@ export default async function CarRentalPage() {
                         </Link>
                         <a
                           className="inline-flex items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 active:bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-800 transition-colors"
-                          href={`https://wa.me/919906646113?text=${encodeURIComponent(`Hi Tempesttrek, I want to book ${c.name}. Please share price & availability.`)}`}
+                          href={`https://wa.me/917006796123?text=${encodeURIComponent(`Hi Tempesttrek, I want to book ${c.name}. Please share price & availability.`)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >

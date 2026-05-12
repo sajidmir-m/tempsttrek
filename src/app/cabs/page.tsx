@@ -26,7 +26,7 @@ const VEHICLE_TYPES = [
 
 export default function CabsPage() {
   return (
-    <div className="bg-gray-50 min-h-screen pt-28 pb-20">
+    <div className="bg-gray-50 min-h-screen pb-20">
       <section className="px-4">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal width="100%">
@@ -148,12 +148,12 @@ export default function CabsPage() {
                   <Phone size={16} /> Request Cab Quote
                 </Link>
                 <a
-                  href="https://wa.me/919906646113"
+                  href="https://wa.me/917006796123"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/60 text-sm font-semibold hover:bg-white/10 transition-colors"
                 >
-                  Our WhatsApp: +91 9906646113
+                  Our WhatsApp: +91 7006796123
                 </a>
               </div>
             </div>

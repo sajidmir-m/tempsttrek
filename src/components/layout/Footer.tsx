@@ -147,7 +147,7 @@ export default function Footer() {
         </div>
 
         <p className="text-center text-emerald-100/80 text-xs sm:text-sm mt-8 pt-6 border-t border-white/10">
-          &copy; 2014–{year} {SITE_BRAND.legalName}. All rights reserved.
+          &copy; 2014–<span suppressHydrationWarning>{year}</span> {SITE_BRAND.legalName}. All rights reserved.
         </p>
       </div>
     </footer>

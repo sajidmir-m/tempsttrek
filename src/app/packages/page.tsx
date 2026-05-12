@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import SectionHeading from '@/components/ui/SectionHeading';
 import PackageCard from '@/components/ui/PackageCard';
 import { PackageCardSkeleton } from '@/components/ui/LoadingSkeleton';
@@ -75,9 +76,24 @@ export default function PackagesPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="bg-teal-700 text-white pt-28 py-16 px-4 text-center">
-        <h1 className="text-4xl font-bold mb-4">Tour Packages</h1>
-        <p className="text-xl opacity-90">Find the perfect Kashmir itinerary for your next vacation.</p>
+      <div className="relative text-white py-16 px-4 text-center overflow-hidden min-h-[300px] md:min-h-[380px] flex flex-col items-center justify-center">
+        <Image
+          src="/shikara.png"
+          alt=""
+          fill
+          className="object-cover scale-[1.02]"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-teal-900/40 to-teal-950/75" />
+        <div className="relative z-10 max-w-3xl mx-auto px-2">
+          <h1 className="text-4xl font-bold mb-4 [text-shadow:0_2px_24px_rgba(0,0,0,0.85),0_1px_4px_rgba(0,0,0,0.9)]">
+            Tour Packages
+          </h1>
+          <p className="text-xl text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.8),0_1px_3px_rgba(0,0,0,0.85)]">
+            Find the perfect Kashmir itinerary for your next vacation.
+          </p>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -33,8 +33,7 @@ export default function CrmModulePlaceholder({
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">{title}</h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600">{description}</p>
         <p className="mt-2 text-xs text-slate-500">
-          This module keeps the ERP navigation structure. Backend tables and APIs can be connected later without changing
-          the shell.
+          Navigation shell only for now — data and actions will wire in here when this module ships.
         </p>
       </div>
 
@@ -67,10 +66,10 @@ export default function CrmModulePlaceholder({
             Back to dashboard
           </CrmButton>
         </Link>
-        <Link href="/admin">
+        <Link href="/admin" title="Full CMS: packages, staff, inquiries, itineraries, and more">
           <CrmButton variant="secondary" size="md">
             <ArrowLeft size={16} />
-            Admin console
+            Admin console (full access)
           </CrmButton>
         </Link>
       </div>
