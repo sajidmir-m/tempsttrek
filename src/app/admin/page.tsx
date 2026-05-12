@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -29,6 +30,7 @@ import {
   ClipboardList,
   ExternalLink,
   Share2,
+  Mountain,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_PACKAGES } from '@/data/packages';
@@ -41,6 +43,7 @@ import AdminCabModal from '@/components/admin/AdminCabModal';
 import AdminPlaceModal from '@/components/admin/AdminPlaceModal';
 import AdminHomeMediaTab from '@/components/admin/AdminHomeMediaTab';
 import AdminSocialMediaTab from '@/components/admin/AdminSocialMediaTab';
+import AdminOffbeatTab from '@/components/admin/AdminOffbeatTab';
 import AdminItinerariesTab from '@/components/admin/AdminItinerariesTab';
 import AdminCarModal from '@/components/admin/AdminCarModal';
 import CrmDashboard from '@/components/admin/CrmDashboard';
@@ -71,6 +74,7 @@ const ADMIN_CONSOLE_GUIDE: { tab: string; label: string; detail: string }[] = [
   { tab: 'car-rental', label: 'Car rental', detail: 'Self-drive fleet cards and rates for the car rental page.' },
   { tab: 'home-media', label: 'Home page media', detail: 'Hero images and clips wired to the public homepage.' },
   { tab: 'social-media', label: 'Social & videos', detail: 'Public /social page: Instagram, Facebook, YouTube links, embeds, and gallery images.' },
+  { tab: 'offbeat', label: 'Off-beat spots', detail: 'Treks and hidden places on /offbeat: URLs, hero images, and long detail copy for each location page.' },
   { tab: 'faqs', label: 'Chatbot FAQs', detail: 'Answers the on-site assistant can use; keep them aligned with live policies.' },
   { tab: 'users', label: 'Users', detail: 'Portal logins: create staff accounts and control who can open admin vs CRM.' },
 ];
@@ -124,6 +128,7 @@ export default function AdminPanel() {
       { id: 'car-rental', label: 'Car Rental', icon: Car },
       { id: 'home-media', label: 'Home page media', icon: Home },
       { id: 'social-media', label: 'Social & videos', icon: Share2 },
+      { id: 'offbeat', label: 'Off-beat spots', icon: Mountain },
       { id: 'crm', label: 'CRM', icon: ClipboardList },
       { id: 'faqs', label: 'Chatbot FAQs', icon: HelpCircle },
       { id: 'users', label: 'Users', icon: Users },
@@ -599,6 +604,13 @@ export default function AdminPanel() {
           <p className="text-teal-400 text-sm mt-1">
             {portalRole === 'employee' ? 'Packages · bookings · CRM' : 'Management console'}
           </p>
+          <Link
+            href="/"
+            className="mt-5 inline-flex items-center justify-center gap-2 w-full rounded-xl bg-teal-800/90 hover:bg-teal-700 border border-teal-500/40 px-4 py-3 text-sm font-semibold text-white transition-colors"
+          >
+            <Home size={18} aria-hidden />
+            Home (public site)
+          </Link>
         </div>
         
         <nav className="flex-1 px-4 space-y-2">
@@ -650,6 +662,13 @@ export default function AdminPanel() {
 
           {/* Mobile Navigation Tabs */}
           <div className="mb-6 flex lg:hidden gap-2 overflow-x-auto pb-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap bg-teal-900 text-white hover:bg-teal-800 transition-colors shrink-0"
+            >
+              <Home size={16} aria-hidden />
+              Home
+            </Link>
             {sidebarNav.map((item) => (
               <button
                 key={item.id}
@@ -1149,12 +1168,27 @@ export default function AdminPanel() {
                     </div>
                     )}
 
-                    <div className="h-32 bg-gradient-to-r from-teal-600 to-emerald-500 flex items-center justify-center text-white">
-                      <div className="flex flex-col items-center gap-1">
-                        <Car size={32} />
-                        <span className="text-xs uppercase tracking-wide opacity-80">
-                          {cab.vehicle_type || "Private Cab"}
-                        </span>
+                    <div className="relative h-32 bg-gradient-to-r from-teal-600 to-emerald-500 overflow-hidden">
+                      {cab.image_url?.trim() ? (
+                        <Image
+                          src={cab.image_url.trim()}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="(max-width:768px) 100vw, 33vw"
+                        />
+                      ) : null}
+                      <div
+                        className={`absolute inset-0 flex items-center justify-center text-white ${
+                          cab.image_url?.trim() ? 'bg-gradient-to-t from-black/70 via-black/25 to-transparent' : ''
+                        }`}
+                      >
+                        <div className="flex flex-col items-center gap-1">
+                          <Car size={32} />
+                          <span className="text-xs uppercase tracking-wide opacity-80">
+                            {cab.vehicle_type || 'Private Cab'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="p-5">
@@ -1332,6 +1366,7 @@ export default function AdminPanel() {
 
           {activeTab === 'home-media' && isAdmin && <AdminHomeMediaTab />}
           {activeTab === 'social-media' && isAdmin && <AdminSocialMediaTab />}
+          {activeTab === 'offbeat' && isAdmin && <AdminOffbeatTab />}
 
           {/* CRM now lives in /crm */}
 

@@ -31,12 +31,17 @@ export type CRMItineraryRow = {
   updated_at?: string;
 };
 
+export type CRMItineraryAssetKind = 'general' | 'hotel' | 'cab' | 'place';
+
 export type CRMItineraryAssetRow = {
   id: string;
   itinerary_id: string;
   image_url: string;
   caption: string | null;
   sort_order: number;
+  /** null = top highlights gallery; 1..N = show after day N */
+  after_day: number | null;
+  kind: CRMItineraryAssetKind | null;
   created_at?: string;
 };
 

@@ -1,51 +1,114 @@
-import ScrollReveal from "@/components/ui/ScrollReveal";
-import Link from "next/link";
-import { Car, MapPin, Clock, Phone } from "lucide-react";
-import { CAB_PLANS } from "@/data/cabs";
+'use client';
+
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import ScrollReveal from '@/components/ui/ScrollReveal';
+import Link from 'next/link';
+import { Car, MapPin, Clock, Phone } from 'lucide-react';
+import { CAB_PLANS } from '@/data/cabs';
+import { supabase } from '@/lib/supabase';
 
 const VEHICLE_TYPES = [
   {
-    name: "Sedan",
-    seats: "4–5 Seater",
-    bestFor: "Couples & Small Families",
-    examples: "Etios / Dzire / Similar",
+    name: 'Sedan',
+    seats: '4–5 Seater',
+    bestFor: 'Couples & Small Families',
+    examples: 'Etios / Dzire / Similar',
   },
   {
-    name: "SUV",
-    seats: "6–7 Seater",
-    bestFor: "Families & Groups",
-    examples: "Innova / Ertiga / Similar",
+    name: 'SUV',
+    seats: '6–7 Seater',
+    bestFor: 'Families & Groups',
+    examples: 'Innova / Ertiga / Similar',
   },
   {
-    name: "Tempo Traveller",
-    seats: "12–14 Seater",
-    bestFor: "Large Groups & Corporate Trips",
-    examples: "Luxury Traveller",
+    name: 'Tempo Traveller',
+    seats: '12–14 Seater',
+    bestFor: 'Large Groups & Corporate Trips',
+    examples: 'Luxury Traveller',
   },
 ];
 
+type CabCard = {
+  id: string;
+  name: string;
+  description: string | null;
+  duration: string | null;
+  starting_from: string | null;
+  ideal_for: string | null;
+  routes: string[] | null;
+  image_url: string | null;
+  vehicle_type: string | null;
+};
+
+const FALLBACK_CABS: CabCard[] = CAB_PLANS.map((p, i) => ({
+  id: `fallback-${i}`,
+  name: p.name,
+  description: p.description,
+  duration: p.duration,
+  starting_from: p.startingFrom,
+  ideal_for: p.idealFor,
+  routes: p.routes,
+  image_url: null,
+  vehicle_type: p.vehicle_type ?? null,
+}));
+
 export default function CabsPage() {
+  const [plans, setPlans] = useState<CabCard[]>(FALLBACK_CABS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('cabs')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        const rows = (data || []) as Record<string, unknown>[];
+        if (!cancelled && rows.length > 0) {
+          setPlans(
+            rows.map((r) => ({
+              id: String(r.id),
+              name: String(r.name || ''),
+              description: (r.description as string) || null,
+              duration: (r.duration as string) || null,
+              starting_from: (r.starting_from as string) || null,
+              ideal_for: (r.ideal_for as string) || null,
+              routes: Array.isArray(r.routes) ? (r.routes as string[]) : [],
+              image_url: (r.image_url as string) || null,
+              vehicle_type: (r.vehicle_type as string) || null,
+            }))
+          );
+        }
+      } catch {
+        if (!cancelled) setPlans(FALLBACK_CABS);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
       <section className="px-4">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal width="100%">
             <div className="text-center mb-12">
-              <span className="text-teal-600 font-semibold tracking-wider uppercase text-sm">
-                Cabs & Transfers
-              </span>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">
-                Private Cabs for Your Kashmir Trip
-              </h1>
+              <span className="text-teal-600 font-semibold tracking-wider uppercase text-sm">Cabs &amp; Transfers</span>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Private Cabs for Your Kashmir Trip</h1>
               <div className="w-20 h-1 bg-teal-500 mx-auto mt-4 rounded-full" />
               <p className="text-gray-800 mt-4 max-w-2xl mx-auto">
-                Door-to-door private cabs with professional local drivers. Airport pickups, day trips and
-                full tour cab packages – all in one place.
+                Door-to-door private cabs with professional local drivers. Airport pickups, day trips and full tour cab
+                packages – all in one place.
               </p>
             </div>
           </ScrollReveal>
 
-          {/* Vehicle Types */}
           <ScrollReveal width="100%">
             <div className="grid md:grid-cols-3 gap-6 mb-12">
               {VEHICLE_TYPES.map((v) => (
@@ -73,16 +136,11 @@ export default function CabsPage() {
             </div>
           </ScrollReveal>
 
-          {/* Cab Plans */}
           <ScrollReveal width="100%">
             <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wide text-teal-600">
-                  Best-Selling Routes
-                </span>
-                <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mt-1">
-                  Popular Cab Plans
-                </h2>
+                <span className="text-xs font-semibold uppercase tracking-wide text-teal-600">Best-Selling Routes</span>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mt-1">Popular Cab Plans</h2>
               </div>
               <p className="text-sm md:text-base text-teal-700 bg-teal-50 border border-teal-100 px-4 py-2 rounded-xl">
                 Note: Prices are indicative and vary by season. Contact us for today&apos;s best deal.
@@ -90,54 +148,92 @@ export default function CabsPage() {
             </div>
           </ScrollReveal>
 
+          {loading ? (
+            <p className="text-center text-gray-600 py-8 text-sm">Loading cab plans…</p>
+          ) : null}
+
           <div className="grid md:grid-cols-2 gap-6">
-            {CAB_PLANS.map((plan, index) => (
-              <ScrollReveal key={plan.name} delay={index * 0.1}>
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
-                      <p className="text-xs text-gray-700 mt-1 flex items-center gap-1">
-                        <Clock size={14} /> {plan.duration}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[11px] uppercase tracking-wide text-gray-700">Starting from</p>
-                      <p className="text-lg font-bold text-teal-600">{plan.startingFrom}</p>
+            {plans.map((plan, index) => (
+              <ScrollReveal key={plan.id} delay={index * 0.05}>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                  <div className="relative h-40 bg-gradient-to-r from-teal-600 to-emerald-500">
+                    {plan.image_url?.trim() ? (
+                      <Image
+                        src={plan.image_url.trim()}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="(max-width:768px) 100vw, 50vw"
+                      />
+                    ) : null}
+                    <div
+                      className={`absolute inset-0 flex flex-col justify-end p-4 text-white ${
+                        plan.image_url?.trim() ? 'bg-gradient-to-t from-black/75 via-black/20 to-transparent' : 'items-center justify-center'
+                      }`}
+                    >
+                      {!plan.image_url?.trim() ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <Car size={28} />
+                          <span className="text-[11px] uppercase tracking-wide opacity-90">
+                            {plan.vehicle_type || 'Private cab'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] font-bold uppercase tracking-wide drop-shadow-md">
+                          {plan.vehicle_type || 'Private cab'}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-800">{plan.description}</p>
-                  <p className="text-xs text-gray-700">
-                    <span className="font-semibold">Ideal for:</span> {plan.idealFor}
-                  </p>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1">
-                      <MapPin size={14} /> Route overview
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {plan.routes.map((r) => (
-                        <span
-                          key={r}
-                          className="px-2.5 py-1 text-[11px] rounded-full bg-gray-100 text-gray-700 border border-gray-200"
-                        >
-                          {r}
-                        </span>
-                      ))}
+                  <div className="p-6 flex flex-col gap-3 flex-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+                        <p className="text-xs text-gray-700 mt-1 flex items-center gap-1">
+                          <Clock size={14} /> {plan.duration || '—'}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-[11px] uppercase tracking-wide text-gray-700">Starting from</p>
+                        <p className="text-lg font-bold text-teal-600">{plan.starting_from || '—'}</p>
+                      </div>
                     </div>
+                    {plan.description ? <p className="text-sm text-gray-800">{plan.description}</p> : null}
+                    {plan.ideal_for ? (
+                      <p className="text-xs text-gray-700">
+                        <span className="font-semibold">Ideal for:</span> {plan.ideal_for}
+                      </p>
+                    ) : null}
+                    {plan.routes?.length ? (
+                      <div>
+                        <p className="text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1">
+                          <MapPin size={14} /> Route overview
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {plan.routes.map((r) => (
+                            <span
+                              key={r}
+                              className="px-2.5 py-1 text-[11px] rounded-full bg-gray-100 text-gray-700 border border-gray-200"
+                            >
+                              {r}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </ScrollReveal>
             ))}
           </div>
 
-          {/* CTA */}
           <ScrollReveal width="100%" delay={0.2}>
             <div className="mt-16 bg-teal-600 rounded-2xl p-6 md:p-8 text-white flex flex-col md:flex-row items-start md:items-center gap-6">
               <div className="flex-1">
                 <h2 className="text-2xl md:text-3xl font-bold mb-2">Need a Cab for Your Kashmir Trip?</h2>
                 <p className="text-sm md:text-base text-teal-50">
-                  Share your dates and route. We&apos;ll suggest the best vehicle type, send you prices and help
-                  you finalize everything on WhatsApp or call.
+                  Share your dates and route. We&apos;ll suggest the best vehicle type, send you prices and help you
+                  finalize everything on WhatsApp or call.
                 </p>
               </div>
               <div className="flex flex-col gap-3 w-full md:w-auto">
@@ -163,5 +259,3 @@ export default function CabsPage() {
     </div>
   );
 }
-
-

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Plus, Save, Trash2, Loader2, UploadCloud, FileText } from 'lucide-react';
-import type { CRMItineraryAssetRow, CRMItineraryRow, ItineraryDay, ItinerarySections } from './types';
+import type { CRMItineraryAssetKind, CRMItineraryAssetRow, CRMItineraryRow, ItineraryDay, ItinerarySections } from './types';
 
 function isMissingCrmItineraryAssetsTable(err: unknown): boolean {
   const msg =
@@ -44,6 +44,78 @@ function normalizeSections(raw: CRMItineraryRow['sections']): ItinerarySections 
     transfers: typeof s.transfers === 'string' ? s.transfers : '',
     hotel_notes: typeof s.hotel_notes === 'string' ? s.hotel_notes : '',
   };
+}
+
+const KIND_OPTIONS: { value: CRMItineraryAssetKind; label: string }[] = [
+  { value: 'general', label: 'General' },
+  { value: 'hotel', label: 'Hotel' },
+  { value: 'cab', label: 'Cab' },
+  { value: 'place', label: 'Place' },
+];
+
+function normalizeAssetRow(r: Record<string, unknown>): CRMItineraryAssetRow {
+  const k = r.kind != null ? String(r.kind) : null;
+  const kind =
+    k === 'hotel' || k === 'cab' || k === 'place' || k === 'general' ? (k as CRMItineraryAssetKind) : null;
+  return {
+    id: String(r.id),
+    itinerary_id: String(r.itinerary_id),
+    image_url: String(r.image_url),
+    caption: (r.caption as string) || null,
+    sort_order: Number(r.sort_order) || 0,
+    after_day: r.after_day != null && r.after_day !== '' ? Number(r.after_day) : null,
+    kind,
+  };
+}
+
+function SlotImageUploader({
+  afterDay,
+  disabled,
+  uploading,
+  onUpload,
+}: {
+  afterDay: number | null;
+  disabled: boolean;
+  uploading: boolean;
+  onUpload: (file: File, afterDay: number | null, kind: CRMItineraryAssetKind) => void;
+}) {
+  const [kind, setKind] = useState<CRMItineraryAssetKind>('general');
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Type</span>
+      <select
+        className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs font-semibold bg-white"
+        value={kind}
+        onChange={(e) => setKind(e.target.value as CRMItineraryAssetKind)}
+        disabled={disabled}
+      >
+        {KIND_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <label
+        className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${
+          disabled ? 'cursor-not-allowed opacity-50 border-gray-100 bg-gray-100' : 'bg-white border-gray-200 hover:bg-gray-50 cursor-pointer'
+        }`}
+      >
+        <UploadCloud size={14} />
+        {uploading ? 'Uploading…' : afterDay == null ? 'Add highlight' : 'Add after this day'}
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          disabled={disabled || uploading}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onUpload(f, afterDay, kind);
+            e.currentTarget.value = '';
+          }}
+        />
+      </label>
+    </div>
+  );
 }
 
 export default function ItineraryEditor({
@@ -108,7 +180,7 @@ export default function ItineraryEditor({
           throw aErr;
         }
       } else {
-        setAssets((a || []) as CRMItineraryAssetRow[]);
+        setAssets((a || []).map((row) => normalizeAssetRow(row as Record<string, unknown>)));
       }
     } catch (e: any) {
       alert('Failed to load itinerary: ' + (e?.message || String(e)));
@@ -199,7 +271,7 @@ export default function ItineraryEditor({
     onDone();
   };
 
-  const uploadImage = async (file: File) => {
+  const uploadImage = async (file: File, afterDay: number | null, kind: CRMItineraryAssetKind) => {
     if (assetsTableMissing) {
       alert(
         'The database table crm_itinerary_assets is missing. Run the SQL migration supabase/migrations/20260516_ensure_crm_itinerary_assets.sql in the Supabase SQL Editor (or supabase db push), then reload this page.'
@@ -220,11 +292,18 @@ export default function ItineraryEditor({
       const { data } = supabase.storage.from('itineraries').getPublicUrl(path);
       const url = data.publicUrl;
 
+      const sameSlot = assets.filter((a) =>
+        afterDay == null ? a.after_day == null : Number(a.after_day) === afterDay
+      );
+      const sort_order = sameSlot.length ? Math.max(...sameSlot.map((a) => a.sort_order), 0) + 10 : 10;
+
       const { error } = await supabase.from('crm_itinerary_assets').insert({
         itinerary_id: itineraryId,
         image_url: url,
         caption: null,
-        sort_order: assets.length ? Math.max(...assets.map((a) => a.sort_order)) + 10 : 10,
+        sort_order,
+        after_day: afterDay,
+        kind: kind === 'general' ? null : kind,
       });
       if (error) throw error;
       await load();
@@ -234,6 +313,25 @@ export default function ItineraryEditor({
       setUploading(false);
     }
   };
+
+  const updateAssetCaption = async (assetId: string, caption: string) => {
+    if (!itineraryId) return;
+    try {
+      const { error } = await supabase
+        .from('crm_itinerary_assets')
+        .update({ caption: caption.trim() || null })
+        .eq('id', assetId);
+      if (error) throw error;
+      setAssets((prev) => prev.map((a) => (a.id === assetId ? { ...a, caption: caption.trim() || null } : a)));
+    } catch (e: any) {
+      alert('Could not update caption: ' + (e?.message || String(e)));
+    }
+  };
+
+  const assetsForSlot = (afterDay: number | null) =>
+    assets
+      .filter((a) => (afterDay == null ? a.after_day == null : Number(a.after_day) === afterDay))
+      .sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id));
 
   const removeAsset = async (assetId: string) => {
     if (!canDelete) return;
@@ -359,6 +457,52 @@ export default function ItineraryEditor({
               </button>
             </div>
 
+            <div className="mb-5 rounded-2xl border border-teal-100 bg-white p-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wide text-teal-700 mb-2">Top highlights</p>
+              <p className="text-xs text-gray-600 mb-3">Shown before day 1 on the printout. Use for hero shots, maps, or property exteriors.</p>
+              {assetsForSlot(null).length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                  {assetsForSlot(null).map((a) => (
+                    <div key={a.id} className="relative rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
+                      <div className="relative aspect-[4/3]">
+                        <Image src={a.image_url} alt="" fill className="object-cover" sizes="120px" />
+                      </div>
+                      {a.kind ? (
+                        <span className="absolute bottom-1 left-1 text-[10px] font-bold uppercase bg-black/60 text-white px-1.5 py-0.5 rounded">
+                          {a.kind}
+                        </span>
+                      ) : null}
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={() => void removeAsset(a.id)}
+                          className="absolute top-1 right-1 p-1 rounded bg-white/90 text-red-600"
+                          aria-label="Remove"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                      <input
+                        className="w-full text-[11px] border-t border-gray-100 px-2 py-1"
+                        placeholder="Caption"
+                        defaultValue={a.caption ?? ''}
+                        onBlur={(e) => {
+                          const v = e.target.value;
+                          if (v !== (a.caption ?? '')) void updateAssetCaption(a.id, v);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              <SlotImageUploader
+                afterDay={null}
+                disabled={assetsTableMissing || !itineraryId}
+                uploading={uploading}
+                onUpload={(f, ad, k) => void uploadImage(f, ad, k)}
+              />
+            </div>
+
             <div className="space-y-4">
               {sections.days.map((d, idx) => (
                 <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-4">
@@ -386,6 +530,53 @@ export default function ItineraryEditor({
                     onChange={(e) => updateDay(idx, { body: e.target.value })}
                     placeholder="Write details, timings, sightseeing, stay, etc."
                   />
+
+                  <div className="mt-4 pt-3 border-t border-gray-100">
+                    <p className="text-xs font-bold text-gray-700 mb-2">Photos after this day</p>
+                    {assetsForSlot(d.day).length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                        {assetsForSlot(d.day).map((a) => (
+                          <div key={a.id} className="relative rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
+                            <div className="relative aspect-[4/3]">
+                              <Image src={a.image_url} alt="" fill className="object-cover" sizes="120px" />
+                            </div>
+                            {a.kind ? (
+                              <span className="absolute bottom-1 left-1 text-[10px] font-bold uppercase bg-black/60 text-white px-1.5 py-0.5 rounded">
+                                {a.kind}
+                              </span>
+                            ) : null}
+                            {canDelete && (
+                              <button
+                                type="button"
+                                onClick={() => void removeAsset(a.id)}
+                                className="absolute top-1 right-1 p-1 rounded bg-white/90 text-red-600"
+                                aria-label="Remove"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                            <input
+                              className="w-full text-[11px] border-t border-gray-100 px-2 py-1"
+                              placeholder="Caption"
+                              defaultValue={a.caption ?? ''}
+                              onBlur={(e) => {
+                                const v = e.target.value;
+                                if (v !== (a.caption ?? '')) void updateAssetCaption(a.id, v);
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500 mb-2">No images for this slot yet.</p>
+                    )}
+                    <SlotImageUploader
+                      afterDay={d.day}
+                      disabled={assetsTableMissing || !itineraryId}
+                      uploading={uploading}
+                      onUpload={(f, ad, k) => void uploadImage(f, ad, k)}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -481,59 +672,10 @@ export default function ItineraryEditor({
           </div>
         </div>
 
-        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
-            <div>
-              <h3 className="font-extrabold text-gray-900">Itinerary images</h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Upload images to Supabase Storage bucket <code className="text-[11px] bg-white border px-1 rounded">itineraries</code>.
-              </p>
-            </div>
-            <label
-              className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold ${
-                assetsTableMissing ? 'cursor-not-allowed opacity-50 border-gray-100 bg-gray-100' : 'bg-white border-gray-200 hover:bg-gray-50 cursor-pointer'
-              }`}
-            >
-              <UploadCloud size={16} />
-              {uploading ? 'Uploading…' : 'Upload image'}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void uploadImage(f);
-                  e.currentTarget.value = '';
-                }}
-                disabled={uploading || assetsTableMissing}
-              />
-            </label>
-          </div>
-
-          {assets.length === 0 ? (
-            <p className="text-sm text-gray-500">No images uploaded yet.</p>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {assets.map((a) => (
-                <div key={a.id} className="relative rounded-xl overflow-hidden border border-gray-100 bg-white">
-                  <div className="relative aspect-[4/3]">
-                    <Image src={a.image_url} alt={a.caption || 'Itinerary image'} fill className="object-cover" sizes="(max-width:768px) 50vw, 25vw" />
-                  </div>
-                  {canDelete && (
-                    <button
-                      type="button"
-                      onClick={() => void removeAsset(a.id)}
-                      className="absolute top-2 right-2 p-2 rounded-lg bg-white/90 backdrop-blur shadow text-red-600 hover:text-red-700"
-                      aria-label="Delete image"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <p className="text-xs text-gray-500 px-1">
+          Images are attached under <strong>Top highlights</strong> and <strong>each day</strong> above. They sync to the print/PDF view. Bucket:{' '}
+          <code className="bg-gray-100 px-1 rounded">itineraries</code>.
+        </p>
 
         <div className="bg-white border border-gray-100 rounded-2xl p-5">
           <h3 className="font-extrabold text-gray-900 mb-2">Internal notes</h3>

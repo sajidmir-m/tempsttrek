@@ -87,6 +87,12 @@ export function ItineraryPrintStyles() {
       .itinerary-pdf-day + .itinerary-pdf-day {
         margin-top: 0;
       }
+      .itinerary-pdf-dayblock {
+        margin-bottom: 14px;
+      }
+      .itinerary-pdf-dayblock .itinerary-pdf-day {
+        margin-bottom: 0;
+      }
       .itinerary-pdf-daynum {
         font-size: 11px;
         font-weight: 900;
@@ -163,12 +169,43 @@ export function ItineraryPrintStyles() {
         border: 2px solid var(--pdf-border);
         border-top: none;
       }
+      .itinerary-pdf-images-inline {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #a3a3a3;
+      }
+      .itinerary-pdf-imgcell {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .itinerary-pdf-imgkind {
+        font-size: 9px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--pdf-brand-dark);
+      }
+      .itinerary-pdf-imgcap {
+        margin: 0;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--pdf-muted);
+        line-height: 1.35;
+      }
       .itinerary-pdf-imgwrap {
         position: relative;
         aspect-ratio: 4/3;
         border: 1px solid #737373;
         overflow: hidden;
         background: #f5f5f5;
+      }
+      .itinerary-pdf-imgwrap--sm {
+        max-height: 140px;
+        aspect-ratio: 4/3;
       }
       @media print {
         .itinerary-pdf-root {
@@ -182,6 +219,9 @@ export function ItineraryPrintStyles() {
         .itinerary-pdf-meta,
         .itinerary-pdf-two-col {
           grid-template-columns: 1fr;
+        }
+        .itinerary-pdf-images-inline {
+          grid-template-columns: 1fr 1fr;
         }
         .itinerary-pdf-col {
           border-right: none;

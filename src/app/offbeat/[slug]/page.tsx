@@ -40,7 +40,13 @@ async function fetchSpotBySlug(slug: string): Promise<OffbeatSpot | null> {
     if (error) throw error;
     const rows = (data || []).map((row) => normalizeRow(row as Record<string, unknown>));
     const hit = rows.find(match);
-    if (hit) return hit;
+    if (hit) {
+      if (!hit.detail_body?.trim()) {
+        const fb = FALLBACK_OFFBEAT_ALL.find((r) => r.name === hit.name && r.detail_body?.trim());
+        if (fb?.detail_body) return { ...hit, detail_body: fb.detail_body };
+      }
+      return hit;
+    }
   } catch {
     /* use fallbacks */
   }
@@ -64,7 +70,13 @@ export default async function OffbeatDetailPage({ params }: { params: Promise<{ 
 
   const img = spot.hero_image?.trim() || '/videos/adventure-1.png';
   const tag = spot.type === 'trek' ? 'Trek' : 'Hidden place';
-  const body = (spot.detail_body || spot.description || '').trim();
+  const rawBody = (spot.detail_body || spot.description || '').trim();
+  const paragraphs = rawBody
+    ? rawBody
+        .split(/\n\n+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
   const listPath = '/offbeat';
 
   return (
@@ -122,11 +134,17 @@ export default async function OffbeatDetailPage({ params }: { params: Promise<{ 
           ) : null}
         </dl>
 
-        <div className="prose prose-emerald max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
-          {body || (
-            <p>
-              Full write-up for this spot can be added in your database (<code className="text-xs">detail_body</code> on{' '}
-              <code className="text-xs">offbeat_spots</code>). Until then, contact Tempesttrek for routing, permits, and
+        <div className="max-w-none text-gray-800 leading-relaxed">
+          {paragraphs.length > 0 ? (
+            paragraphs.map((p, i) => (
+              <p key={i} className="mb-5 last:mb-0 text-base md:text-[17px]">
+                {p}
+              </p>
+            ))
+          ) : (
+            <p className="text-gray-700">
+              Full write-up for this spot can be added in your database (<code className="text-xs bg-gray-100 px-1 rounded">detail_body</code> on{' '}
+              <code className="text-xs bg-gray-100 px-1 rounded">offbeat_spots</code>). Until then, contact Tempesttrek for routing, permits, and
               realistic day plans.
             </p>
           )}

@@ -21,6 +21,7 @@ export default function Navbar() {
   const navLinks: Array<{ name: string; href: string }> = [
     { name: 'Home', href: '/' },
     { name: 'Packages', href: '/packages' },
+    { name: 'Cabs', href: '/cabs' },
     { name: 'Off Beat', href: '/offbeat' },
     { name: 'Car Rental', href: '/car-rental' },
     { name: 'About', href: '/about' },

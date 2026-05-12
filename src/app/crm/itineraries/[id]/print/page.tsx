@@ -7,10 +7,21 @@ import PrintPdfToolbar from '@/components/crm/PrintPdfToolbar';
 import { ItineraryPrintStyles } from '@/components/crm/itinerary-print-styles';
 import { SITE_BRAND, SITE_CONTACT, formatPhoneDisplay } from '@/lib/site-contact';
 
-type Asset = { id: string; image_url: string; caption: string | null; sort_order: number };
+type Asset = {
+  id: string;
+  image_url: string;
+  caption: string | null;
+  sort_order: number;
+  after_day: number | null;
+  kind: string | null;
+};
 
 function padDay(n: number) {
   return String(n).padStart(2, '0');
+}
+
+function sortAssets(list: Asset[]) {
+  return [...list].sort((x, y) => x.sort_order - y.sort_order || x.id.localeCompare(y.id));
 }
 
 export default function ItineraryPrintPage() {
@@ -39,13 +50,25 @@ export default function ItineraryPrintPage() {
         return;
       }
       setItin(row as Record<string, unknown>);
-      const { data: imgs } = await supabase
+      const { data: imgs, error: imgErr } = await supabase
         .from('crm_itinerary_assets')
-        .select('id,image_url,caption,sort_order')
+        .select('*')
         .eq('itinerary_id', id)
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
-      setAssets(((imgs || []) as Asset[]) ?? []);
+      if (imgErr) {
+        setAssets([]);
+      } else {
+        const mapped: Asset[] = (imgs || []).map((raw: Record<string, unknown>) => ({
+          id: String(raw.id),
+          image_url: String(raw.image_url),
+          caption: (raw.caption as string) || null,
+          sort_order: Number(raw.sort_order) || 0,
+          after_day: raw.after_day != null && raw.after_day !== '' ? Number(raw.after_day) : null,
+          kind: raw.kind != null ? String(raw.kind) : null,
+        }));
+        setAssets(mapped);
+      }
     } catch {
       setNotFound(true);
       setItin(null);
@@ -87,6 +110,9 @@ export default function ItineraryPrintPage() {
   const itineraryBody = typeof itin.itinerary_body === 'string' ? itin.itinerary_body : '';
 
   const a = assets;
+  const headerAssets = sortAssets(a.filter((x) => x.after_day == null));
+  const assetsAfterDay = (dayNum: number) => sortAssets(a.filter((x) => x.after_day === dayNum));
+
   const guest = itin.customer_name ? String(itin.customer_name) : '—';
   const phone = itin.customer_phone ? String(itin.customer_phone) : '—';
   const email = itin.customer_email ? String(itin.customer_email) : '—';
@@ -138,14 +164,18 @@ export default function ItineraryPrintPage() {
           </div>
         </div>
 
-        {a.length > 0 ? (
+        {headerAssets.length > 0 ? (
           <div className="itinerary-pdf-section">
             <h2 className="itinerary-pdf-section-head">Destination highlights</h2>
             <div className="itinerary-pdf-images">
-              {a.slice(0, 4).map((img) => (
-                <div key={img.id} className="itinerary-pdf-imgwrap">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- print/PDF: avoid optimizer edge cases */}
-                  <img src={img.image_url} alt={img.caption || 'Itinerary'} className="h-full w-full object-cover" />
+              {headerAssets.map((img) => (
+                <div key={img.id} className="itinerary-pdf-imgcell">
+                  {img.kind ? <div className="itinerary-pdf-imgkind">{img.kind}</div> : null}
+                  <div className="itinerary-pdf-imgwrap">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- print/PDF: avoid optimizer edge cases */}
+                    <img src={img.image_url} alt={img.caption || 'Itinerary'} className="h-full w-full object-cover" />
+                  </div>
+                  {img.caption ? <p className="itinerary-pdf-imgcap">{img.caption}</p> : null}
                 </div>
               ))}
             </div>
@@ -155,13 +185,33 @@ export default function ItineraryPrintPage() {
         <div className="itinerary-pdf-section">
           <h2 className="itinerary-pdf-section-head">Day wise itinerary</h2>
           {days.length > 0 ? (
-            days.map((d, idx) => (
-              <div key={idx} className="itinerary-pdf-day">
-                <div className="itinerary-pdf-daynum">Day {padDay(idx + 1)}</div>
-                <div className="itinerary-pdf-daytitle">{d?.title?.trim() || `Day ${idx + 1}`}</div>
-                <div className="itinerary-pdf-daybody">{d?.body || ''}</div>
-              </div>
-            ))
+            days.map((d, idx) => {
+              const dayNum = idx + 1;
+              const rowImgs = assetsAfterDay(dayNum);
+              return (
+                <div key={idx} className="itinerary-pdf-dayblock">
+                  <div className="itinerary-pdf-day">
+                    <div className="itinerary-pdf-daynum">Day {padDay(dayNum)}</div>
+                    <div className="itinerary-pdf-daytitle">{d?.title?.trim() || `Day ${dayNum}`}</div>
+                    <div className="itinerary-pdf-daybody">{d?.body || ''}</div>
+                  </div>
+                  {rowImgs.length > 0 ? (
+                    <div className="itinerary-pdf-images-inline">
+                      {rowImgs.map((img) => (
+                        <div key={img.id} className="itinerary-pdf-imgcell">
+                          {img.kind ? <div className="itinerary-pdf-imgkind">{img.kind}</div> : null}
+                          <div className="itinerary-pdf-imgwrap itinerary-pdf-imgwrap--sm">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img.image_url} alt={img.caption || ''} className="h-full w-full object-cover" />
+                          </div>
+                          {img.caption ? <p className="itinerary-pdf-imgcap">{img.caption}</p> : null}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })
           ) : (
             <div className="itinerary-pdf-note">{itineraryBody || '—'}</div>
           )}
