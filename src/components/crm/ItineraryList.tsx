@@ -63,26 +63,26 @@ export default function ItineraryList() {
   }, [rows, query]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-        <div>
+    <div className="min-w-0 space-y-6">
+      <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
           <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-700">CRM</p>
           <h1 className="text-xl font-extrabold text-gray-900 mt-2">Itineraries</h1>
           <p className="text-sm text-gray-600 mt-1">Create structured itineraries with images and export to PDF.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5">
-            <Search size={16} className="text-gray-500" />
+        <div className="flex min-w-0 flex-wrap items-stretch gap-2">
+          <div className="flex min-w-0 flex-1 basis-[12rem] items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 sm:max-w-xs sm:flex-none">
+            <Search size={16} className="shrink-0 text-gray-500" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search itineraries…"
-              className="text-sm outline-none bg-transparent w-56"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
             />
           </div>
           <a
             href="/crm/itineraries?edit=new"
-            className="inline-flex items-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-teal-600/20"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-600/20 hover:bg-teal-700"
           >
             <Plus size={18} /> New itinerary
           </a>
@@ -99,51 +99,53 @@ export default function ItineraryList() {
           }}
         />
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
-              <tr>
-                <th className="px-5 py-3">Title</th>
-                <th className="px-5 py-3">Guest</th>
-                <th className="px-5 py-3">Dates</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {loading ? (
+        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+          <div className="-mx-px overflow-x-auto sm:mx-0">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
-                    Loading…
-                  </td>
+                  <th className="px-5 py-3">Title</th>
+                  <th className="px-5 py-3">Guest</th>
+                  <th className="px-5 py-3">Dates</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-right">Action</th>
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    No itineraries found.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((r) => (
-                  <tr key={r.id} className="hover:bg-gray-50">
-                    <td className="px-5 py-3 font-semibold text-gray-900">{r.title}</td>
-                    <td className="px-5 py-3">{[r.customer_name, r.customer_phone].filter(Boolean).join(' · ') || '—'}</td>
-                    <td className="px-5 py-3 text-gray-600">{[r.travel_start, r.travel_end].filter(Boolean).join(' → ') || '—'}</td>
-                    <td className="px-5 py-3">
-                      <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">
-                        {r.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <a href={`/crm/itineraries?edit=${r.id}`} className="text-teal-700 font-semibold hover:underline">
-                        Edit
-                      </a>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                      Loading…
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                      No itineraries found.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((r) => (
+                    <tr key={r.id} className="hover:bg-gray-50">
+                      <td className="px-5 py-3 font-semibold text-gray-900">{r.title}</td>
+                      <td className="px-5 py-3">{[r.customer_name, r.customer_phone].filter(Boolean).join(' · ') || '—'}</td>
+                      <td className="px-5 py-3 text-gray-600">{[r.travel_start, r.travel_end].filter(Boolean).join(' → ') || '—'}</td>
+                      <td className="px-5 py-3">
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700">
+                          {r.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <a href={`/crm/itineraries?edit=${r.id}`} className="font-semibold text-teal-700 hover:underline">
+                          Edit
+                        </a>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

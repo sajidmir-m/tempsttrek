@@ -3,7 +3,7 @@ import { cn, crmTableHeader, crmTableRow } from './crm-variants';
 export function CrmTable({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={cn('overflow-x-auto rounded-xl border border-slate-200', className)}>
-      <table className="min-w-full divide-y divide-slate-100 text-sm">{children}</table>
+      <table className="w-full min-w-[640px] divide-y divide-slate-100 text-sm">{children}</table>
     </div>
   );
 }

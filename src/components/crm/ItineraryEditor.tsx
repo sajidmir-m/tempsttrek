@@ -343,13 +343,13 @@ export default function ItineraryEditor({
   if (loading) return <p className="text-gray-500 py-10">Loading itinerary…</p>;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-      <div className="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <div>
+    <div className="min-w-0 rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
           <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-700">Itinerary</p>
           <h2 className="text-lg font-extrabold text-gray-900">{itineraryId ? 'Edit itinerary' : 'New itinerary'}</h2>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           {itineraryId && (
             <Link
               href={`/crm/itineraries/${itineraryId}/print`}
@@ -381,7 +381,7 @@ export default function ItineraryEditor({
       </div>
 
       {assetsTableMissing ? (
-        <div className="mx-6 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        <div className="mx-4 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 sm:mx-6">
           <p className="font-semibold">Itinerary images are unavailable</p>
           <p className="mt-1 text-amber-900/90">
             Your project is missing the table <code className="text-xs bg-white/80 px-1 rounded border border-amber-200">public.crm_itinerary_assets</code>.
@@ -393,8 +393,8 @@ export default function ItineraryEditor({
         </div>
       ) : null}
 
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="space-y-6 p-4 sm:p-6">
+        <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
           <input
             className="border rounded-xl px-4 py-3 text-sm"
             placeholder="Title *"
@@ -443,14 +443,14 @@ export default function ItineraryEditor({
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-gray-50 border border-gray-100 rounded-2xl p-5">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <h3 className="font-extrabold text-gray-900">Day-wise itinerary</h3>
+        <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="min-w-0 rounded-2xl border border-gray-100 bg-gray-50 p-4 sm:p-5 lg:col-span-2">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h3 className="min-w-0 font-extrabold text-gray-900">Day-wise itinerary</h3>
               <button
                 type="button"
                 onClick={addDay}
-                className="inline-flex items-center gap-2 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 px-4 py-2 text-sm font-semibold"
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50"
               >
                 <Plus size={16} />
                 Add day
@@ -506,13 +506,13 @@ export default function ItineraryEditor({
             <div className="space-y-4">
               {sections.days.map((d, idx) => (
                 <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-4">
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <p className="text-xs font-semibold tracking-[0.25em] uppercase text-gray-500">Day {d.day}</p>
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <p className="min-w-0 text-xs font-semibold uppercase tracking-[0.25em] text-gray-500">Day {d.day}</p>
                     {sections.days.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeDay(idx)}
-                        className="text-xs font-bold text-red-600 hover:text-red-700"
+                        className="shrink-0 text-xs font-bold text-red-600 hover:text-red-700"
                       >
                         Remove
                       </button>
@@ -582,12 +582,12 @@ export default function ItineraryEditor({
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-white border border-gray-100 rounded-2xl p-5">
-              <h3 className="font-extrabold text-gray-900 mb-3">Inclusions</h3>
-              <div className="flex gap-2">
+          <div className="min-w-0 space-y-6">
+            <div className="min-w-0 rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
+              <h3 className="mb-3 font-extrabold text-gray-900">Inclusions</h3>
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <input
-                  className="flex-1 border rounded-xl px-3 py-2 text-sm"
+                  className="min-w-0 flex-1 rounded-xl border px-3 py-2 text-sm"
                   value={newInc}
                   onChange={(e) => setNewInc(e.target.value)}
                   placeholder="Add inclusion"
@@ -595,7 +595,7 @@ export default function ItineraryEditor({
                 <button
                   type="button"
                   onClick={() => addListItem('inclusions', newInc)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 text-sm font-semibold"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 sm:self-start"
                 >
                   <Plus size={16} /> Add
                 </button>
@@ -605,9 +605,16 @@ export default function ItineraryEditor({
                   <p className="text-sm text-gray-500">No inclusions yet.</p>
                 ) : (
                   sections.inclusions.map((x, i) => (
-                    <div key={i} className="flex items-center justify-between gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
-                      <p className="text-sm text-gray-800">{x}</p>
-                      <button type="button" onClick={() => removeListItem('inclusions', i)} className="text-red-600 hover:text-red-700">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2"
+                    >
+                      <p className="min-w-0 flex-1 break-words text-sm text-gray-800">{x}</p>
+                      <button
+                        type="button"
+                        onClick={() => removeListItem('inclusions', i)}
+                        className="shrink-0 text-red-600 hover:text-red-700"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -616,11 +623,11 @@ export default function ItineraryEditor({
               </div>
             </div>
 
-            <div className="bg-white border border-gray-100 rounded-2xl p-5">
-              <h3 className="font-extrabold text-gray-900 mb-3">Exclusions</h3>
-              <div className="flex gap-2">
+            <div className="min-w-0 rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
+              <h3 className="mb-3 font-extrabold text-gray-900">Exclusions</h3>
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <input
-                  className="flex-1 border rounded-xl px-3 py-2 text-sm"
+                  className="min-w-0 flex-1 rounded-xl border px-3 py-2 text-sm"
                   value={newExc}
                   onChange={(e) => setNewExc(e.target.value)}
                   placeholder="Add exclusion"
@@ -628,7 +635,7 @@ export default function ItineraryEditor({
                 <button
                   type="button"
                   onClick={() => addListItem('exclusions', newExc)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 text-sm font-semibold"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 sm:self-start"
                 >
                   <Plus size={16} /> Add
                 </button>
@@ -638,9 +645,16 @@ export default function ItineraryEditor({
                   <p className="text-sm text-gray-500">No exclusions yet.</p>
                 ) : (
                   sections.exclusions.map((x, i) => (
-                    <div key={i} className="flex items-center justify-between gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
-                      <p className="text-sm text-gray-800">{x}</p>
-                      <button type="button" onClick={() => removeListItem('exclusions', i)} className="text-red-600 hover:text-red-700">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2"
+                    >
+                      <p className="min-w-0 flex-1 break-words text-sm text-gray-800">{x}</p>
+                      <button
+                        type="button"
+                        onClick={() => removeListItem('exclusions', i)}
+                        className="shrink-0 text-red-600 hover:text-red-700"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -651,9 +665,9 @@ export default function ItineraryEditor({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white border border-gray-100 rounded-2xl p-5">
-            <h3 className="font-extrabold text-gray-900 mb-3">Transfers</h3>
+        <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="min-w-0 rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
+            <h3 className="mb-3 font-extrabold text-gray-900">Transfers</h3>
             <textarea
               className="w-full border rounded-xl px-3 py-2 text-sm min-h-[100px]"
               value={sections.transfers}
@@ -661,8 +675,8 @@ export default function ItineraryEditor({
               placeholder="Airport pickup, local transfers, intercity etc."
             />
           </div>
-          <div className="bg-white border border-gray-100 rounded-2xl p-5">
-            <h3 className="font-extrabold text-gray-900 mb-3">Hotel notes</h3>
+          <div className="min-w-0 rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
+            <h3 className="mb-3 font-extrabold text-gray-900">Hotel notes</h3>
             <textarea
               className="w-full border rounded-xl px-3 py-2 text-sm min-h-[100px]"
               value={sections.hotel_notes}
@@ -677,8 +691,8 @@ export default function ItineraryEditor({
           <code className="bg-gray-100 px-1 rounded">itineraries</code>.
         </p>
 
-        <div className="bg-white border border-gray-100 rounded-2xl p-5">
-          <h3 className="font-extrabold text-gray-900 mb-2">Internal notes</h3>
+        <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
+          <h3 className="mb-2 font-extrabold text-gray-900">Internal notes</h3>
           <textarea
             className="w-full border rounded-xl px-3 py-2 text-sm min-h-[90px]"
             value={row.internal_notes ?? ''}
