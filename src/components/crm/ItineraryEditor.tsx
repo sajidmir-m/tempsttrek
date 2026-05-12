@@ -352,7 +352,7 @@ export default function ItineraryEditor({
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           {itineraryId && (
             <Link
-              href={`/crm/itineraries/${itineraryId}/print`}
+              href={`/crm/itineraries/${itineraryId}/print?download=1`}
               target="_blank"
               className="inline-flex items-center gap-2 rounded-xl border border-gray-200 hover:bg-gray-50 px-4 py-2.5 text-sm font-semibold"
             >

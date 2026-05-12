@@ -13,7 +13,8 @@ import CrmBadge, { invoiceStatusTone } from '../ui/CrmBadge';
 import { CrmTable, CrmThead, CrmTbody, CrmTr, CrmTh, CrmTd } from '../ui/CrmTable';
 import { CrmSkeleton } from '../ui/CrmSkeleton';
 import CrmEmptyState from '../ui/CrmEmptyState';
-import { Pencil, Plus, Receipt, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { Pencil, Plus, Receipt, Trash2, FileDown } from 'lucide-react';
 
 export type InvoiceRow = {
   id: string;
@@ -204,6 +205,16 @@ export default function CrmInvoicesManager() {
                   <CrmBadge tone={invoiceStatusTone(r.status)}>{r.status}</CrmBadge>
                 </CrmTd>
                 <CrmTd className="text-right">
+                  <Link
+                    href={`/crm/manage-invoice/${r.id}/print?download=1`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mr-1 inline-flex items-center justify-center rounded-lg p-2 text-teal-700 hover:bg-teal-50"
+                    title="PDF (download)"
+                    aria-label="Download invoice PDF"
+                  >
+                    <FileDown size={16} />
+                  </Link>
                   <CrmButton variant="ghost" size="sm" className="mr-1" onClick={() => openEdit(r)}>
                     <Pencil size={16} />
                   </CrmButton>

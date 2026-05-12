@@ -1,9 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { X } from 'lucide-react';
+import { cn } from '@/lib/cn';
 import CrmSidebar, { readInitialSidebarCollapsed } from './CrmSidebar';
 import CrmTopBar from './CrmTopBar';
 
@@ -11,6 +12,8 @@ type PortalRole = 'admin' | 'employee' | 'user';
 
 export default function CrmShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const isPrintView = Boolean(pathname?.includes('/print'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [role, setRole] = useState<PortalRole>('user');
@@ -71,7 +74,14 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <CrmTopBar onOpenMobileMenu={() => setMobileOpen(true)} email={email} />
-        <main className="mx-auto min-w-0 w-full max-w-[1600px] flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <main
+          className={cn(
+            'mx-auto min-w-0 w-full max-w-[1600px] flex-1 px-4 sm:px-6 lg:px-8',
+            isPrintView ? 'pb-6 pt-1 sm:pb-8 sm:pt-2' : 'py-6'
+          )}
+        >
+          {children}
+        </main>
       </div>
 
       {mobileOpen && (

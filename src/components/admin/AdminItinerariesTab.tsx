@@ -259,7 +259,7 @@ export default function AdminItinerariesTab({ canDelete }: { canDelete: boolean 
                 </td>
                 <td className="px-5 py-3 text-right space-x-2">
                   <a
-                    href={`/crm/itineraries/${r.id}/print`}
+                    href={`/crm/itineraries/${r.id}/print?download=1`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-sky-700 font-semibold hover:underline"

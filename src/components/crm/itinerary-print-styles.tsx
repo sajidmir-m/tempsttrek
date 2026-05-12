@@ -17,6 +17,9 @@ export function ItineraryPrintStyles() {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
+      .pdf-avoid-break {
+        page-break-inside: avoid;
+      }
       .itinerary-pdf-brandbar {
         background: linear-gradient(90deg, var(--pdf-brand-dark) 0%, var(--pdf-brand) 100%);
         color: #fff;

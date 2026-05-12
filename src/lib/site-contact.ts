@@ -24,3 +24,16 @@ export function formatPhoneDisplay(num: string) {
   const digits = num.replace(/\D/g, '');
   return `+91 ${digits}`;
 }
+
+/** Deduped office numbers for PDFs / letterhead (uses `SITE_CONTACT.phones`). */
+export function companyPhonesDisplayLine(): string {
+  const seen = new Set<string>();
+  const parts: string[] = [];
+  for (const p of SITE_CONTACT.phones) {
+    const d = p.replace(/\D/g, '');
+    if (!d || seen.has(d)) continue;
+    seen.add(d);
+    parts.push(formatPhoneDisplay(p));
+  }
+  return parts.join(' · ');
+}

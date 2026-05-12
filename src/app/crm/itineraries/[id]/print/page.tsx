@@ -1,11 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import PrintPdfToolbar from '@/components/crm/PrintPdfToolbar';
 import { ItineraryPrintStyles } from '@/components/crm/itinerary-print-styles';
-import { SITE_BRAND, SITE_CONTACT, formatPhoneDisplay } from '@/lib/site-contact';
+import { CrmPdfLetterhead, CrmPdfLetterheadStyles } from '@/components/crm/crm-pdf-letterhead';
+import { SITE_BRAND, SITE_CONTACT, companyPhonesDisplayLine } from '@/lib/site-contact';
+import { downloadElementAsPdf } from '@/lib/crm-pdf-download';
+import { usePdfViewportLayout } from '@/hooks/usePdfViewportLayout';
 
 type Asset = {
   id: string;
@@ -24,14 +27,19 @@ function sortAssets(list: Asset[]) {
   return [...list].sort((x, y) => x.sort_order - y.sort_order || x.id.localeCompare(y.id));
 }
 
-export default function ItineraryPrintPage() {
+function ItineraryPrintPageInner() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = typeof params?.id === 'string' ? params.id : '';
+  const wantsAutoDownload = searchParams.get('download') === '1';
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [itin, setItin] = useState<Record<string, unknown> | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const pdfExportRef = useRef<HTMLDivElement>(null);
+  const layout = usePdfViewportLayout();
 
   const load = useCallback(async () => {
     if (!id) {
@@ -82,9 +90,48 @@ export default function ItineraryPrintPage() {
     void load();
   }, [load]);
 
+  const pdfFilename = useMemo(() => {
+    if (!itin) return `itinerary-${id ? id.slice(0, 8) : 'export'}.pdf`;
+    const slug = String(itin.title ?? 'itinerary')
+      .trim()
+      .slice(0, 48)
+      .replace(/[^\w\u0900-\u0FFF\-]+/g, '_')
+      .replace(/_+/g, '_');
+    const tail = id ? id.slice(0, 8) : 'export';
+    return `${slug || 'itinerary'}-${tail}.pdf`;
+  }, [itin, id]);
+
+  const handleDownloadPdf = useCallback(async () => {
+    const el = pdfExportRef.current;
+    if (!el) return;
+    setPdfBusy(true);
+    try {
+      await downloadElementAsPdf(el, pdfFilename);
+    } catch (e) {
+      if (process.env.NODE_ENV === 'development') console.error('[itinerary-pdf]', e);
+      window.print();
+    } finally {
+      setPdfBusy(false);
+    }
+  }, [pdfFilename]);
+
+  useEffect(() => {
+    if (layout !== 'wide') return;
+    if (!wantsAutoDownload || loading || notFound || !itin) return;
+    let active = true;
+    const t = window.setTimeout(() => {
+      if (!active) return;
+      void handleDownloadPdf();
+    }, 700);
+    return () => {
+      active = false;
+      window.clearTimeout(t);
+    };
+  }, [layout, wantsAutoDownload, loading, notFound, itin, handleDownloadPdf]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center text-neutral-900 text-sm font-medium">
+      <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-neutral-900">
         Loading itinerary…
       </div>
     );
@@ -92,10 +139,10 @@ export default function ItineraryPrintPage() {
 
   if (notFound || !itin) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-3 p-6 text-center text-neutral-900">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-white p-6 text-center text-neutral-900">
         <p className="font-semibold">Itinerary not found or you are not signed in.</p>
-        <p className="text-sm text-neutral-700 max-w-md">
-          Open this page from the CRM while signed in as staff. Use <strong>Print / Save as PDF</strong> in your browser to download.
+        <p className="max-w-md text-sm text-neutral-700">
+          Open this page from the CRM while signed in as staff. Use <strong>Print</strong> or <strong>Download PDF</strong> from the toolbar when viewing a valid itinerary.
         </p>
       </div>
     );
@@ -123,16 +170,32 @@ export default function ItineraryPrintPage() {
   return (
     <div className="itinerary-pdf-root min-h-screen bg-white">
       <ItineraryPrintStyles />
+      <CrmPdfLetterheadStyles />
       <style>{`
         @media print {
           .noPrint { display: none !important; }
         }
       `}</style>
 
-      <PrintPdfToolbar />
+      <PrintPdfToolbar
+        title="Itinerary PDF"
+        banner={
+          wantsAutoDownload && layout === 'narrow'
+            ? 'On this screen size we do not auto-start the download. Tap "Download PDF" when you are ready — it is faster and clearer than print-to-PDF on phones.'
+            : null
+        }
+        downloadLabel={pdfBusy ? 'Preparing PDF…' : 'Download PDF'}
+        onDownloadPdf={handleDownloadPdf}
+        downloadDisabled={pdfBusy}
+      />
 
-      <div className="max-w-[210mm] mx-auto px-5 pb-16 sm:px-8">
-        <div className="itinerary-pdf-brandbar">Tempesttrek · Kashmir · Tour itinerary</div>
+      <div
+        ref={pdfExportRef}
+        className="mx-auto max-w-[210mm] px-4 pb-[max(4rem,env(safe-area-inset-bottom))] pt-1 sm:px-8 sm:pb-16"
+      >
+        <CrmPdfLetterhead subtitle="Kashmir tours · Guest itinerary" />
+
+        <div className="itinerary-pdf-brandbar pdf-avoid-break">Tempesttrek · Kashmir · Tour itinerary</div>
 
         <h1 className="itinerary-pdf-title">{String(itin.title ?? 'Itinerary')}</h1>
         <p className="itinerary-pdf-sub">Confirmed plan &amp; inclusions summary (subject to voucher)</p>
@@ -264,7 +327,7 @@ export default function ItineraryPrintPage() {
         <div className="itinerary-pdf-footer">
           <p className="m-0 font-bold text-neutral-900">{SITE_BRAND.legalName}</p>
           <p className="mt-1 m-0">
-            {SITE_CONTACT.address} · {SITE_CONTACT.email} · {formatPhoneDisplay(SITE_CONTACT.helpline24)}
+            {SITE_CONTACT.address} · {SITE_CONTACT.email} · {companyPhonesDisplayLine()}
           </p>
           <p className="mt-2 m-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
             This document is for guest reference only. Final services are as per signed voucher and availability.
@@ -272,5 +335,19 @@ export default function ItineraryPrintPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ItineraryPrintPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-neutral-900">
+          Loading…
+        </div>
+      }
+    >
+      <ItineraryPrintPageInner />
+    </Suspense>
   );
 }
