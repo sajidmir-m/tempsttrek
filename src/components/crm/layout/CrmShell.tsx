@@ -3,12 +3,11 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { resolvePortalRole, type PortalRole } from '@/lib/portal-role';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import CrmSidebar, { readInitialSidebarCollapsed } from './CrmSidebar';
 import CrmTopBar from './CrmTopBar';
-
-type PortalRole = 'admin' | 'employee' | 'user';
 
 export default function CrmShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -16,7 +15,7 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
   const isPrintView = Boolean(pathname?.includes('/print'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [role, setRole] = useState<PortalRole>('user');
+  const [role, setRole] = useState<PortalRole>('admin');
   const [email, setEmail] = useState<string>('');
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -25,17 +24,35 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    let cancelled = false;
+
+    const applySession = async (session: { user: { id: string; email?: string | null } } | null) => {
       if (!session) {
-        router.push('/admin');
+        if (!cancelled) router.push('/admin');
         return;
       }
+      if (cancelled) return;
       setEmail(session.user.email || '');
-      const { data } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
-      const r = (data?.role || 'user') as PortalRole;
-      setRole(r);
-      if (r !== 'admin' && r !== 'employee') router.push('/admin');
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setRole(resolvePortalRole(data?.role));
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => applySession(session));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      void applySession(session);
     });
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   const logout = async () => {

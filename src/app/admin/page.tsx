@@ -47,6 +47,7 @@ import AdminOffbeatTab from '@/components/admin/AdminOffbeatTab';
 import AdminItinerariesTab from '@/components/admin/AdminItinerariesTab';
 import AdminCarModal from '@/components/admin/AdminCarModal';
 import CrmDashboard from '@/components/admin/CrmDashboard';
+import { resolvePortalRole } from '@/lib/portal-role';
 
 const CRM_WORKSPACE_LINKS: { href: string; label: string }[] = [
   { href: '/crm/dashboard', label: 'Dashboard' },
@@ -197,8 +198,7 @@ export default function AdminPanel() {
       .maybeSingle()
       .then(({ data }: { data: { role?: string } | null }) => {
         if (cancelled) return;
-        if ((data?.role || '').toLowerCase() === 'employee') setPortalRole('employee');
-        else setPortalRole('admin');
+        setPortalRole(resolvePortalRole(data?.role));
       });
     return () => {
       cancelled = true;
