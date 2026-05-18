@@ -12,7 +12,9 @@ import CrmDialog from '../ui/CrmDialog';
 import { CrmTable, CrmThead, CrmTbody, CrmTr, CrmTh, CrmTd } from '../ui/CrmTable';
 import { CrmSkeleton } from '../ui/CrmSkeleton';
 import CrmEmptyState from '../ui/CrmEmptyState';
-import { Pencil, Plus, Trash2, Wallet } from 'lucide-react';
+import { Eye, Pencil, Plus, Trash2, Wallet } from 'lucide-react';
+import CrmEntityDetailModal from '../details/CrmEntityDetailModal';
+import { EXPENSE_CATEGORIES, formatCategoryLabel, normalizeCategory } from '@/lib/ledger-utils';
 
 export type ExpenseRow = {
   id: string;
@@ -25,11 +27,9 @@ export type ExpenseRow = {
   created_at: string;
 };
 
-const cats = ['vendor', 'staff', 'trip', 'office', 'other'] as const;
-
 const emptyForm = {
   title: '',
-  category: 'other' as (typeof cats)[number],
+  category: 'other' as (typeof EXPENSE_CATEGORIES)[number],
   amount: '',
   expense_date: new Date().toISOString().slice(0, 10),
   payee: '',
@@ -45,6 +45,7 @@ export default function CrmExpensesManager() {
   const [modal, setModal] = useState<ModalState>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [detailRow, setDetailRow] = useState<ExpenseRow | null>(null);
   const { showToast } = useToast();
 
   const load = useCallback(async () => {
@@ -87,7 +88,7 @@ export default function CrmExpensesManager() {
   const openEdit = (row: ExpenseRow) => {
     setForm({
       title: row.title,
-      category: row.category as (typeof cats)[number],
+      category: normalizeCategory(row.category),
       amount: String(row.amount),
       expense_date: row.expense_date,
       payee: row.payee || '',
@@ -190,9 +191,12 @@ export default function CrmExpensesManager() {
               <CrmTr key={r.id}>
                 <CrmTd className="whitespace-nowrap text-xs text-slate-600">{r.expense_date}</CrmTd>
                 <CrmTd className="font-medium text-slate-900">{r.title}</CrmTd>
-                <CrmTd className="hidden sm:table-cell">{r.category}</CrmTd>
+                <CrmTd className="hidden sm:table-cell">{formatCategoryLabel(r.category)}</CrmTd>
                 <CrmTd>₹{Number(r.amount).toLocaleString()}</CrmTd>
                 <CrmTd className="text-right">
+                  <CrmButton variant="ghost" size="sm" className="mr-1" onClick={() => setDetailRow(r)} title="View details">
+                    <Eye size={16} />
+                  </CrmButton>
                   <CrmButton variant="ghost" size="sm" className="mr-1" onClick={() => openEdit(r)}>
                     <Pencil size={16} />
                   </CrmButton>
@@ -210,10 +214,10 @@ export default function CrmExpensesManager() {
         <div className="space-y-3">
           <CrmInput label="Title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
           <div className="grid gap-3 sm:grid-cols-2">
-            <CrmSelect label="Category" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as (typeof cats)[number] }))}>
-              {cats.map((c) => (
+            <CrmSelect label="Category" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as (typeof EXPENSE_CATEGORIES)[number] }))}>
+              {EXPENSE_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {formatCategoryLabel(c)}
                 </option>
               ))}
             </CrmSelect>
@@ -232,6 +236,29 @@ export default function CrmExpensesManager() {
           </div>
         </div>
       </CrmDialog>
+
+      <CrmEntityDetailModal
+        open={detailRow != null}
+        title={detailRow?.title || 'Expense details'}
+        onClose={() => setDetailRow(null)}
+        sections={[
+          {
+            heading: 'Expense',
+            fields: detailRow
+              ? [
+                  { label: 'Category', value: formatCategoryLabel(detailRow.category) },
+                  { label: 'Amount', value: `₹${Number(detailRow.amount).toLocaleString()}` },
+                  { label: 'Date', value: detailRow.expense_date },
+                  { label: 'Payee', value: detailRow.payee || '—' },
+                ]
+              : [],
+          },
+          {
+            heading: 'Notes',
+            fields: detailRow ? [{ label: 'Details', value: detailRow.notes || '—' }] : [],
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -1,153 +1,382 @@
-/** Invoice PDF screen + print styles (shares CSS variables with itinerary PDF). */
+/** Hotel voucher PDF styles — literal colors (html2canvas does not resolve CSS variables). */
 export function InvoicePrintStyles() {
   return (
     <style>{`
       .invoice-pdf-root {
-        --pdf-ink: #0a0a0a;
-        --pdf-body: #262626;
-        --pdf-muted: #525252;
-        --pdf-brand: #0f766e;
-        --pdf-brand-dark: #115e59;
-        --pdf-border: #171717;
         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        color: var(--pdf-ink);
+        color: #0f172a;
         background: #fff;
       }
       .invoice-pdf-root * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        box-sizing: border-box;
       }
       .pdf-avoid-break { page-break-inside: avoid; }
-      .invoice-pdf-banner {
-        background: linear-gradient(90deg, var(--pdf-brand-dark) 0%, var(--pdf-brand) 100%);
-        color: #fff;
-        padding: 12px 18px;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
+
+      .hv-doc {
+        max-width: 210mm;
+        margin: 0 auto;
+        background: #fff;
+        color: #0f172a;
       }
-      .invoice-pdf-title-row {
+
+      .hv-header {
+        position: relative;
+        min-height: 200px;
+        overflow: hidden;
+        border-radius: 0;
+      }
+      .hv-header-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 40%;
+        z-index: 0;
+      }
+      .hv-header-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: linear-gradient(
+          180deg,
+          rgba(8, 28, 48, 0.55) 0%,
+          rgba(8, 28, 48, 0.72) 55%,
+          rgba(8, 28, 48, 0.85) 100%
+        );
+      }
+      .hv-header-inner {
+        position: relative;
+        z-index: 2;
+        padding: 16px 20px 20px;
+        color: #ffffff;
+      }
+      .hv-header-top {
         display: flex;
         flex-wrap: wrap;
-        align-items: flex-end;
         justify-content: space-between;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .hv-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .hv-logo {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 8px;
+        padding: 4px;
+      }
+      .hv-brand-name {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        color: #ffffff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      }
+      .hv-brand-tag {
+        margin: 2px 0 0;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        color: #93c5fd;
+        text-transform: uppercase;
+      }
+      .hv-contact {
+        text-align: right;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 1.55;
+        max-width: 280px;
+        color: #ffffff;
+      }
+      .hv-contact p { margin: 0 0 3px; color: #ffffff; }
+
+      .hv-title-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         gap: 12px;
         margin-top: 18px;
       }
-      .invoice-pdf-h1 {
+      .hv-title-line {
+        flex: 1;
+        max-width: 72px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #f0c14a, transparent);
+      }
+      .hv-title {
         margin: 0;
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 900;
-        letter-spacing: -0.02em;
-      }
-      .invoice-pdf-invno {
-        margin: 0;
-        font-size: 13px;
-        font-weight: 800;
-        font-family: ui-monospace, monospace;
-        color: var(--pdf-brand-dark);
-      }
-      .invoice-pdf-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0;
-        border: 2px solid var(--pdf-border);
-        margin-top: 18px;
-      }
-      .invoice-pdf-cell {
-        padding: 12px 16px;
-        border: 1px solid #737373;
-        min-height: 52px;
-      }
-      .invoice-pdf-label {
-        font-size: 9px;
-        font-weight: 800;
-        text-transform: uppercase;
         letter-spacing: 0.12em;
-        color: var(--pdf-brand-dark);
-        margin-bottom: 4px;
+        color: #f0c14a;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        white-space: nowrap;
       }
-      .invoice-pdf-value {
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--pdf-ink);
+      .hv-quote {
+        margin: 10px auto 0;
+        max-width: 520px;
+        text-align: center;
+        font-size: 11px;
+        font-style: italic;
+        font-weight: 500;
         line-height: 1.45;
+        color: rgba(255, 255, 255, 0.92);
       }
-      .invoice-pdf-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 22px;
-        border: 2px solid var(--pdf-border);
+
+      .hv-info-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+        border-bottom: 2px solid #b8c5d4;
+        background: #ffffff;
       }
-      .invoice-pdf-table th {
-        background: var(--pdf-brand);
-        color: #fff;
-        text-align: left;
-        font-size: 10px;
+      .hv-info-item {
+        padding: 12px 14px;
+        text-align: center;
+        border-right: 1px solid #b8c5d4;
+        background: #ffffff;
+      }
+      .hv-info-item:last-child { border-right: none; }
+      .hv-info-label {
+        display: block;
+        font-size: 9px;
         font-weight: 800;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        padding: 10px 14px;
+        color: #475569;
+        margin-bottom: 4px;
       }
-      .invoice-pdf-table td {
-        padding: 14px 16px;
+      .hv-info-value {
         font-size: 13px;
-        border-bottom: 1px solid #a3a3a3;
-        vertical-align: top;
+        font-weight: 800;
+        color: #0f172a;
       }
-      .invoice-pdf-table tr:last-child td { border-bottom: none; }
-      .invoice-pdf-amount {
-        text-align: right;
-        font-size: 18px;
-        font-weight: 900;
-        color: var(--pdf-brand-dark);
+      .hv-status-confirmed { color: #15803d !important; }
+
+      .hv-panels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        padding: 16px 14px;
+        background: #ffffff;
       }
-      .invoice-pdf-status {
-        display: inline-block;
-        margin-top: 4px;
-        padding: 4px 10px;
-        font-size: 10px;
-        font-weight: 900;
+      .hv-panel {
+        border: 1.5px solid #b8c5d4;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+      }
+      .hv-panel-head {
+        margin: 0;
+        padding: 10px 14px;
+        background: #0c2d4a;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 800;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        border: 2px solid var(--pdf-border);
-        background: #fafafa;
       }
-      .invoice-pdf-notes {
-        margin-top: 22px;
-        padding: 14px 16px;
-        border: 2px solid var(--pdf-border);
-        background: #fafafa;
+      .hv-panel-body { padding: 12px 14px; background: #ffffff; }
+      .hv-field {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px dashed #e2e8f0;
+        font-size: 11px;
       }
-      .invoice-pdf-notes h3 {
-        margin: 0 0 8px;
+      .hv-field:last-child { border-bottom: none; }
+      .hv-field-label {
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        font-size: 9px;
+        letter-spacing: 0.06em;
+      }
+      .hv-field-value {
+        font-weight: 800;
+        text-align: right;
+        color: #0f172a;
+      }
+
+      .hv-table-wrap {
+        padding: 0 14px 16px;
+        background: #ffffff;
+      }
+      .hv-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1.5px solid #0c2d4a;
         font-size: 10px;
+        background: #ffffff;
+      }
+      .hv-table th {
+        background: #0c2d4a;
+        color: #ffffff;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 10px 8px;
+        text-align: left;
+        font-size: 9px;
+      }
+      .hv-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #b8c5d4;
+        font-weight: 700;
+        vertical-align: top;
+        color: #0f172a;
+        background: #ffffff;
+      }
+      .hv-table tbody tr:nth-child(even) td {
+        background: #f1f5f9;
+        color: #0f172a;
+      }
+      .hv-table-empty {
+        text-align: center;
+        color: #475569;
+        font-weight: 600;
+        padding: 20px !important;
+        font-size: 11px;
+      }
+      .hv-table-note {
+        display: block;
+        margin-top: 8px;
+        font-size: 10px;
+        white-space: pre-wrap;
+        color: #0f172a;
+      }
+      .hv-table-empty code { color: #475569; }
+
+      .hv-cab {
+        margin: 0 14px 16px;
+        border: 1.5px solid #b8c5d4;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+      }
+      .hv-cab-head {
+        margin: 0;
+        padding: 10px 14px;
+        background: #0c2d4a;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .hv-cab-body {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      .hv-cab-cols {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+      }
+      .hv-cab-cols .hv-field {
+        flex-direction: column;
+        align-items: flex-start;
+        border: none;
+        padding: 0;
+      }
+      .hv-cab-cols .hv-field-label { color: #475569; }
+      .hv-cab-cols .hv-field-value { text-align: left; color: #0f172a; }
+      .hv-cab-art {
+        width: 120px;
+        height: 48px;
+        flex-shrink: 0;
+        opacity: 0.7;
+      }
+
+      .hv-terms {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        padding: 0 14px 20px;
+        background: #ffffff;
+      }
+      .hv-term-box {
+        border: 1.5px solid #b8c5d4;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+      }
+      .hv-term-box--rel { position: relative; }
+      .hv-term-head {
+        margin: 0;
+        padding: 10px 14px;
+        background: #0c2d4a;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .hv-term-box ul {
+        margin: 0;
+        padding: 12px 14px 12px 28px;
+        font-size: 10px;
+        line-height: 1.55;
+        font-weight: 600;
+        color: #334155;
+        background: #ffffff;
+      }
+      .hv-term-box li { color: #334155; }
+      .hv-stamp {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        padding: 8px 16px;
+        border: 3px solid #dc2626;
+        color: #dc2626;
+        font-size: 14px;
         font-weight: 900;
         letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--pdf-brand-dark);
+        transform: rotate(-12deg);
+        opacity: 0.85;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 4px;
       }
-      .invoice-pdf-notes p {
-        margin: 0;
-        font-size: 12.5px;
-        line-height: 1.55;
-        white-space: pre-wrap;
-        color: var(--pdf-body);
-      }
-      .invoice-pdf-footer {
-        margin-top: 28px;
-        padding-top: 16px;
-        border-top: 2px solid var(--pdf-border);
-        font-size: 10.5px;
+
+      .hv-footer {
+        padding: 12px 14px 20px;
+        border-top: 2px solid #b8c5d4;
+        font-size: 10px;
         font-weight: 600;
-        color: var(--pdf-muted);
+        color: #475569;
+        text-align: center;
+        background: #ffffff;
       }
+      .hv-footer p { margin: 0 0 4px; color: #475569; }
+
       @media print {
-        .invoice-pdf-root { font-size: 11pt; }
+        .invoice-pdf-root { font-size: 10pt; }
+        .hv-header { min-height: 180px; }
       }
       @media (max-width: 640px) {
-        .invoice-pdf-grid { grid-template-columns: 1fr; }
+        .hv-panels,
+        .hv-terms,
+        .hv-cab-cols { grid-template-columns: 1fr; }
+        .hv-info-bar { grid-template-columns: 1fr; }
+        .hv-info-item { border-right: none; border-bottom: 1px solid #b8c5d4; }
+        .hv-title { font-size: 20px; }
+        .hv-contact { text-align: left; }
       }
     `}</style>
   );

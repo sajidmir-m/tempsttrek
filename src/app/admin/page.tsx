@@ -47,7 +47,12 @@ import AdminOffbeatTab from '@/components/admin/AdminOffbeatTab';
 import AdminItinerariesTab from '@/components/admin/AdminItinerariesTab';
 import AdminCarModal from '@/components/admin/AdminCarModal';
 import CrmDashboard from '@/components/admin/CrmDashboard';
-import { resolvePortalRole } from '@/lib/portal-role';
+import {
+  resolvePortalRole,
+  formatProfileRoleLabel,
+  profileRoleBadgeClass,
+  isStoredAdmin,
+} from '@/lib/portal-role';
 
 const CRM_WORKSPACE_LINKS: { href: string; label: string }[] = [
   { href: '/crm/dashboard', label: 'Dashboard' },
@@ -99,6 +104,7 @@ export default function AdminPanel() {
   const [newEmployeeEmail, setNewEmployeeEmail] = useState('');
   const [newEmployeePassword, setNewEmployeePassword] = useState('');
   const [createEmployeeLoading, setCreateEmployeeLoading] = useState(false);
+  const [storedProfileRole, setStoredProfileRole] = useState<string | null>(null);
   
   // Modal States
   const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
@@ -198,12 +204,38 @@ export default function AdminPanel() {
       .maybeSingle()
       .then(({ data }: { data: { role?: string } | null }) => {
         if (cancelled) return;
+        setStoredProfileRole(data?.role ?? null);
         setPortalRole(resolvePortalRole(data?.role));
       });
     return () => {
       cancelled = true;
     };
   }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!session?.user?.id || storedProfileRole === null || isStoredAdmin(storedProfileRole)) return;
+    let cancelled = false;
+    (async () => {
+      const {
+        data: { session: s },
+      } = await supabase.auth.getSession();
+      const token = s?.access_token;
+      if (!token || cancelled) return;
+      const res = await fetch('/api/admin/claim-admin', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!cancelled && json.promoted) {
+        setStoredProfileRole('admin');
+        setPortalRole('admin');
+        fetchData();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.user?.id, storedProfileRole]);
 
   const fetchData = async () => {
     // 1. Fetch Inquiries
@@ -467,12 +499,32 @@ export default function AdminPanel() {
 
   const handleUpdateUserRole = async (userId: string, nextRole: 'admin' | 'employee' | 'user') => {
     if (!isAdmin) return;
-    const { error } = await supabase.from('profiles').update({ role: nextRole }).eq('id', userId);
-    if (error) {
-      alert('Error updating role: ' + error.message);
-      return;
+    try {
+      const {
+        data: { session: s },
+      } = await supabase.auth.getSession();
+      const token = s?.access_token;
+      if (!token) {
+        alert('You are not signed in.');
+        return;
+      }
+      const res = await fetch('/api/admin/set-user-role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, role: nextRole }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert([json.error, json.hint].filter(Boolean).join('\n\n') || 'Failed to update role');
+        return;
+      }
+      fetchData();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Request failed');
     }
-    fetchData();
   };
 
   const handleCreateEmployee = async (e: React.FormEvent) => {
@@ -1452,6 +1504,23 @@ export default function AdminPanel() {
            {activeTab === 'users' && (
              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                <h3 className="text-lg font-bold text-gray-900 mb-6">Registered Users</h3>
+               {session?.user?.id && storedProfileRole && !isStoredAdmin(storedProfileRole) && (
+                 <motion.div
+                   initial={{ opacity: 0 }}
+                   animate={{ opacity: 1 }}
+                   className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
+                 >
+                   <p className="font-semibold">Your account role in the database is &quot;{storedProfileRole}&quot;</p>
+                   <p className="mt-1 text-amber-900/90">
+                     Portal access still works, but user management and employee creation need role{' '}
+                     <code className="rounded bg-white/80 px-1 text-xs">admin</code>. Click{' '}
+                     <span className="font-medium">Admin</span> on your row below, or run in Supabase SQL:{' '}
+                     <code className="block mt-2 rounded bg-white/80 px-2 py-1 text-xs break-all">
+                       UPDATE public.profiles SET role = &apos;admin&apos; WHERE email = &apos;{session.user.email}&apos;;
+                     </code>
+                   </p>
+                 </motion.div>
+               )}
                {isAdmin && (
                  <form
                    onSubmit={handleCreateEmployee}
@@ -1533,10 +1602,10 @@ export default function AdminPanel() {
                              </div>
                            </td>
                            <td className="px-6 py-4">
-                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                               user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
-                             }`}>
-                               {user.role || 'user'}
+                             <span
+                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${profileRoleBadgeClass(user.role)}`}
+                             >
+                               {formatProfileRoleLabel(user.role)}
                              </span>
                            </td>
                            <td className="px-6 py-4 text-sm text-gray-500">

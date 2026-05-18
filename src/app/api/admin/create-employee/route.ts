@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createSupabaseAdmin } from '@/lib/supabase-admin';
+import { isStoredAdmin } from '@/lib/portal-role';
+import { profileWritePayload } from '@/lib/profiles-db';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -46,8 +48,20 @@ export async function POST(req: Request) {
     if (profReadErr) {
       return NextResponse.json({ error: profReadErr.message }, { status: 500 });
     }
-    if (profile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Only admins can create employees' }, { status: 403 });
+    if (!isStoredAdmin(profile?.role)) {
+      const { count } = await admin
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('role', 'admin');
+      if ((count ?? 0) > 0) {
+        return NextResponse.json(
+          {
+            error: 'Only admins can create employees',
+            hint: 'Your profile role is not admin. In Supabase SQL Editor run: UPDATE public.profiles SET role = \'admin\' WHERE email = your@email.com;',
+          },
+          { status: 403 }
+        );
+      }
     }
 
     let body: { email?: string; password?: string };
@@ -72,6 +86,8 @@ export async function POST(req: Request) {
       email,
       password,
       email_confirm: true,
+      user_metadata: { role: 'employee' },
+      app_metadata: { role: 'employee' },
     });
 
     if (createErr || !created?.user) {
@@ -80,22 +96,29 @@ export async function POST(req: Request) {
 
     const uid = created.user.id;
 
-    const { error: upsertErr } = await admin.from('profiles').upsert(
-      {
-        id: uid,
-        email,
-        role: 'employee',
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'id' }
-    );
+    const profileRow = profileWritePayload({ id: uid, email, role: 'employee' });
 
-    if (upsertErr) {
+    const { data: updated, error: updateErr } = await admin
+      .from('profiles')
+      .update({ email: profileRow.email, role: profileRow.role })
+      .eq('id', uid)
+      .select('role')
+      .maybeSingle();
+
+    if (updateErr) {
       await admin.auth.admin.deleteUser(uid);
-      return NextResponse.json({ error: upsertErr.message }, { status: 500 });
+      return NextResponse.json({ error: updateErr.message }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, userId: uid, email });
+    if (!updated) {
+      const { error: insertErr } = await admin.from('profiles').insert(profileRow);
+      if (insertErr) {
+        await admin.auth.admin.deleteUser(uid);
+        return NextResponse.json({ error: insertErr.message }, { status: 500 });
+      }
+    }
+
+    return NextResponse.json({ ok: true, userId: uid, email, role: 'employee' });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Unexpected error';
     return NextResponse.json({ error: message }, { status: 500 });

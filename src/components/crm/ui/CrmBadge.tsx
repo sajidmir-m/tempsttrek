@@ -77,3 +77,11 @@ export function voucherStatusTone(status: string | null | undefined): keyof type
   if (s === 'issued') return 'info';
   return 'default';
 }
+
+export function paymentStatusTone(status: string | null | undefined): keyof typeof tone {
+  const s = (status || '').toLowerCase();
+  if (s === 'paid') return 'success';
+  if (s === 'partial') return 'warning';
+  if (s === 'pending') return 'danger';
+  return 'default';
+}

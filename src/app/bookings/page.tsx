@@ -6,7 +6,8 @@ import { supabase } from '@/lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 import { useToast } from '@/components/ui/Toast';
 import { PackageCardSkeleton } from '@/components/ui/LoadingSkeleton';
-import { Package, Calendar, MapPin, Phone, Mail, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Package, Calendar, MapPin, Phone, Mail, CheckCircle, Clock, XCircle, Eye } from 'lucide-react';
+import CrmEntityDetailModal from '@/components/crm/details/CrmEntityDetailModal';
 import Link from 'next/link';
 
 export default function CustomerPortal() {
@@ -17,6 +18,7 @@ export default function CustomerPortal() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [detailBooking, setDetailBooking] = useState<any | null>(null);
 
   useEffect(() => {
     // Check for session
@@ -300,6 +302,13 @@ export default function CustomerPortal() {
                     </div>
 
                     <div className="flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDetailBooking(booking)}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg font-medium hover:bg-slate-200 transition-colors"
+                      >
+                        <Eye size={16} /> View Details
+                      </button>
                       {booking.packages?.slug && (
                         <Link
                           href={`/packages/${booking.packages.slug}`}
@@ -324,6 +333,46 @@ export default function CustomerPortal() {
           </div>
         )}
       </div>
+
+      <CrmEntityDetailModal
+        open={detailBooking != null}
+        title={detailBooking?.packages?.title || 'Booking details'}
+        subtitle={detailBooking?.name}
+        onClose={() => setDetailBooking(null)}
+        sections={[
+          {
+            heading: 'Booking information',
+            fields: detailBooking
+              ? [
+                  { label: 'Status', value: detailBooking.status },
+                  { label: 'Booking ID', value: detailBooking.id },
+                  { label: 'Submitted', value: new Date(detailBooking.created_at).toLocaleString() },
+                  { label: 'Package', value: detailBooking.packages?.title || 'Custom' },
+                ]
+              : [],
+          },
+          {
+            heading: 'Customer data',
+            fields: detailBooking
+              ? [
+                  { label: 'Name', value: detailBooking.name },
+                  { label: 'Email', value: detailBooking.email },
+                  { label: 'Phone', value: detailBooking.phone },
+                  { label: 'Message', value: detailBooking.message || '—' },
+                ]
+              : [],
+          },
+          {
+            heading: 'Payment history',
+            fields: detailBooking
+              ? [
+                  { label: 'Package price', value: detailBooking.packages?.price ? `₹${Number(detailBooking.packages.price).toLocaleString()}` : 'On request' },
+                  { label: 'Payment', value: 'Contact office for payment status' },
+                ]
+              : [],
+          },
+        ]}
+      />
     </div>
   );
 }

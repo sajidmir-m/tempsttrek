@@ -12,7 +12,8 @@ import { CrmSkeleton } from '../ui/CrmSkeleton';
 import CrmEmptyState from '../ui/CrmEmptyState';
 import CrmButton from '../ui/CrmButton';
 import CrmDialog from '../ui/CrmDialog';
-import { Pencil, Plus, Trash2, UserPlus } from 'lucide-react';
+import { Eye, Pencil, Plus, Trash2, UserPlus } from 'lucide-react';
+import CrmEntityDetailModal from '../details/CrmEntityDetailModal';
 
 export type LeadRow = {
   id: string;
@@ -49,6 +50,7 @@ export default function CrmLeadsTable({ title = 'Leads' }: { title?: string }) {
   const [modal, setModal] = useState<ModalState>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [detailRow, setDetailRow] = useState<LeadRow | null>(null);
   const { showToast } = useToast();
 
   const load = useCallback(async () => {
@@ -214,6 +216,9 @@ export default function CrmLeadsTable({ title = 'Leads' }: { title?: string }) {
                 </CrmTd>
                 <CrmTd className="hidden text-xs text-slate-500 lg:table-cell">{new Date(r.created_at).toLocaleDateString()}</CrmTd>
                 <CrmTd className="text-right">
+                  <CrmButton variant="ghost" size="sm" className="mr-1" onClick={() => setDetailRow(r)} title="View details">
+                    <Eye size={16} />
+                  </CrmButton>
                   <CrmButton variant="ghost" size="sm" className="mr-1" onClick={() => openEdit(r)}>
                     <Pencil size={16} />
                   </CrmButton>
@@ -259,6 +264,36 @@ export default function CrmLeadsTable({ title = 'Leads' }: { title?: string }) {
           </div>
         </div>
       </CrmDialog>
+
+      <CrmEntityDetailModal
+        open={detailRow != null}
+        title={detailRow?.name || 'Lead details'}
+        subtitle={detailRow?.destination || undefined}
+        onClose={() => setDetailRow(null)}
+        sections={[
+          {
+            heading: 'Customer',
+            fields: detailRow
+              ? [
+                  { label: 'Phone', value: detailRow.phone || '—' },
+                  { label: 'Email', value: detailRow.email || '—' },
+                  { label: 'Source', value: detailRow.source || '—' },
+                  { label: 'Duration', value: detailRow.duration || '—' },
+                ]
+              : [],
+          },
+          {
+            heading: 'Booking / quote',
+            fields: detailRow
+              ? [
+                  { label: 'Status', value: detailRow.status },
+                  { label: 'Budget', value: detailRow.budget != null ? `₹${Number(detailRow.budget).toLocaleString()}` : '—' },
+                  { label: 'Created', value: new Date(detailRow.created_at).toLocaleString() },
+                ]
+              : [],
+          },
+        ]}
+      />
     </div>
   );
 }

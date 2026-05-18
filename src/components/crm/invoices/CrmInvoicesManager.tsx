@@ -15,6 +15,7 @@ import { CrmSkeleton } from '../ui/CrmSkeleton';
 import CrmEmptyState from '../ui/CrmEmptyState';
 import Link from 'next/link';
 import { Pencil, Plus, Receipt, Trash2, FileDown } from 'lucide-react';
+import { syncPaidInvoiceToLedger, type InvoiceForSync } from '@/lib/ledger-invoice-sync';
 
 export type InvoiceRow = {
   id: string;
@@ -25,6 +26,8 @@ export type InvoiceRow = {
   status: string;
   issue_date: string;
   notes: string | null;
+  ledger_id: string | null;
+  synced_to_ledger_at: string | null;
   created_at: string;
 };
 
@@ -38,12 +41,16 @@ const emptyForm = {
   status: 'draft' as (typeof statuses)[number],
   issue_date: new Date().toISOString().slice(0, 10),
   notes: '',
+  ledger_id: '',
 };
 
 type ModalState = { mode: 'create' } | { mode: 'edit'; row: InvoiceRow } | null;
 
+type TripLedgerOption = { id: string; title: string };
+
 export default function CrmInvoicesManager() {
   const [rows, setRows] = useState<InvoiceRow[]>([]);
+  const [tripLedgers, setTripLedgers] = useState<TripLedgerOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [modal, setModal] = useState<ModalState>(null);
@@ -56,7 +63,7 @@ export default function CrmInvoicesManager() {
     try {
       const { data, error } = await supabase
         .from('crm_invoices')
-        .select('id,invoice_number,customer_name,customer_email,amount,status,issue_date,notes,created_at')
+        .select('id,invoice_number,customer_name,customer_email,amount,status,issue_date,notes,ledger_id,synced_to_ledger_at,created_at')
         .order('issue_date', { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -71,6 +78,13 @@ export default function CrmInvoicesManager() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase.from('crm_trip_ledgers').select('id,title').order('updated_at', { ascending: false }).limit(50);
+      setTripLedgers((data || []) as TripLedgerOption[]);
+    })();
+  }, []);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -98,6 +112,7 @@ export default function CrmInvoicesManager() {
       status: row.status as (typeof statuses)[number],
       issue_date: row.issue_date,
       notes: row.notes || '',
+      ledger_id: row.ledger_id || '',
     });
     setModal({ mode: 'edit', row });
   };
@@ -122,19 +137,50 @@ export default function CrmInvoicesManager() {
       status: form.status,
       issue_date: form.issue_date,
       notes: form.notes.trim() || null,
+      ledger_id: form.ledger_id || null,
       updated_at: new Date().toISOString(),
     };
     setSaving(true);
     try {
+      const prevStatus = modal?.mode === 'edit' ? modal.row.status : null;
+      let savedId = modal?.mode === 'edit' ? modal.row.id : '';
+
       if (modal?.mode === 'edit') {
         const { error } = await supabase.from('crm_invoices').update(payload).eq('id', modal.row.id);
         if (error) throw error;
         showToast('Invoice updated', 'success');
       } else {
         const actor = await crmActorFields();
-        const { error } = await supabase.from('crm_invoices').insert({ ...payload, ...actor });
+        const { data: inserted, error } = await supabase
+          .from('crm_invoices')
+          .insert({ ...payload, ...actor })
+          .select('id')
+          .single();
         if (error) throw error;
+        savedId = inserted?.id || '';
         showToast('Invoice added', 'success');
+      }
+
+      if (form.status === 'paid' && (prevStatus !== 'paid' || modal?.mode === 'create')) {
+        const invoiceId = modal?.mode === 'edit' ? modal.row.id : savedId;
+        if (invoiceId) {
+          const syncPayload: InvoiceForSync = {
+            id: invoiceId,
+            invoice_number: inv,
+            customer_name: customer,
+            amount,
+            status: 'paid',
+            issue_date: form.issue_date,
+            ledger_id: form.ledger_id || null,
+            synced_to_ledger_at: modal?.mode === 'edit' ? modal.row.synced_to_ledger_at : null,
+          };
+          const sync = await syncPaidInvoiceToLedger(syncPayload);
+          if (sync.ok && form.ledger_id) {
+            showToast('Payment synced to trip ledger', 'success');
+          } else if (!form.ledger_id) {
+            showToast('Paid — select a trip ledger to sync payment into accounting', 'error');
+          }
+        }
       }
       setModal(null);
       await load();
@@ -210,8 +256,8 @@ export default function CrmInvoicesManager() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mr-1 inline-flex items-center justify-center rounded-lg p-2 text-teal-700 hover:bg-teal-50"
-                    title="PDF (download)"
-                    aria-label="Download invoice PDF"
+                    title="Hotel voucher PDF"
+                    aria-label="Download hotel voucher PDF"
                   >
                     <FileDown size={16} />
                   </Link>
@@ -244,7 +290,27 @@ export default function CrmInvoicesManager() {
               </option>
             ))}
           </CrmSelect>
-          <CrmTextarea label="Notes" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} rows={2} />
+          <CrmSelect
+            label="Link to trip ledger (auto-sync when paid)"
+            value={form.ledger_id}
+            onChange={(e) => setForm((f) => ({ ...f, ledger_id: e.target.value }))}
+          >
+            <option value="">— None —</option>
+            {tripLedgers.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.title}
+              </option>
+            ))}
+          </CrmSelect>
+          {form.status === 'paid' && form.ledger_id ? (
+            <p className="text-xs text-teal-700">Saving as paid will add a client payment line to the selected ledger.</p>
+          ) : null}
+          <CrmTextarea
+            label="Notes (plain text or JSON for voucher stays/cab)"
+            value={form.notes}
+            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+            rows={3}
+          />
           <div className="flex justify-end gap-2 pt-2">
             <CrmButton variant="secondary" size="md" onClick={() => setModal(null)} disabled={saving}>
               Cancel

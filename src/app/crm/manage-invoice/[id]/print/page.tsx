@@ -5,8 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import PrintPdfToolbar from '@/components/crm/PrintPdfToolbar';
 import { InvoicePrintStyles } from '@/components/crm/invoice-print-styles';
-import { CrmPdfLetterhead, CrmPdfLetterheadStyles } from '@/components/crm/crm-pdf-letterhead';
-import { SITE_BRAND, SITE_CONTACT, companyPhonesDisplayLine } from '@/lib/site-contact';
+import HotelVoucherPdf from '@/components/crm/HotelVoucherPdf';
 import { downloadElementAsPdf } from '@/lib/crm-pdf-download';
 import { usePdfViewportLayout } from '@/hooks/usePdfViewportLayout';
 
@@ -21,6 +20,27 @@ type InvoiceRow = {
   notes: string | null;
 };
 
+function preloadPdfImages(root: HTMLElement): Promise<void> {
+  const urls = ['/gem.png', '/logo.png'];
+  const inDom = Array.from(root.querySelectorAll('img')).map((img) => img.getAttribute('src') || '');
+  const all = [...new Set([...urls, ...inDom.filter(Boolean)])];
+
+  return Promise.all(
+    all.map(
+      (src) =>
+        new Promise<void>((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          const path = src.startsWith('http') ? src : `${window.location.origin}${src.startsWith('/') ? src : `/${src}`}`;
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = path;
+          if (img.complete) resolve();
+        })
+    )
+  ).then(() => undefined);
+}
+
 function InvoicePrintPageInner() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -31,6 +51,8 @@ function InvoicePrintPageInner() {
   const [notFound, setNotFound] = useState(false);
   const [inv, setInv] = useState<InvoiceRow | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [assetsReady, setAssetsReady] = useState(false);
   const pdfExportRef = useRef<HTMLDivElement>(null);
   const layout = usePdfViewportLayout();
 
@@ -66,21 +88,45 @@ function InvoicePrintPageInner() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (!inv) {
+      setAssetsReady(false);
+      return;
+    }
+    let active = true;
+    const tryPreload = () => {
+      const root = pdfExportRef.current;
+      if (!root) {
+        requestAnimationFrame(tryPreload);
+        return;
+      }
+      void preloadPdfImages(root).then(() => {
+        if (active) setAssetsReady(true);
+      });
+    };
+    requestAnimationFrame(tryPreload);
+    return () => {
+      active = false;
+    };
+  }, [inv]);
+
   const pdfFilename = useMemo(() => {
-    if (!inv) return `invoice-${id ? id.slice(0, 8) : 'export'}.pdf`;
-    const num = inv.invoice_number.replace(/[^\w.\-]+/g, '_').replace(/_+/g, '_') || 'invoice';
-    return `invoice-${num}.pdf`;
+    if (!inv) return `hotel-voucher-${id ? id.slice(0, 8) : 'export'}.pdf`;
+    const num = inv.invoice_number.replace(/[^\w.\-]+/g, '_').replace(/_+/g, '_') || 'voucher';
+    return `hotel-voucher-${num}.pdf`;
   }, [inv, id]);
 
   const handleDownloadPdf = useCallback(async () => {
     const el = pdfExportRef.current;
     if (!el) return;
     setPdfBusy(true);
+    setPdfError(null);
     try {
+      await preloadPdfImages(el);
       await downloadElementAsPdf(el, pdfFilename);
     } catch (e) {
       if (process.env.NODE_ENV === 'development') console.error('[invoice-pdf]', e);
-      window.print();
+      setPdfError('PDF download failed. Try again or use Print → Save as PDF.');
     } finally {
       setPdfBusy(false);
     }
@@ -88,22 +134,22 @@ function InvoicePrintPageInner() {
 
   useEffect(() => {
     if (layout !== 'wide') return;
-    if (!wantsAutoDownload || loading || notFound || !inv) return;
+    if (!wantsAutoDownload || loading || notFound || !inv || !assetsReady) return;
     let active = true;
     const t = window.setTimeout(() => {
       if (!active) return;
       void handleDownloadPdf();
-    }, 600);
+    }, 700);
     return () => {
       active = false;
       window.clearTimeout(t);
     };
-  }, [layout, wantsAutoDownload, loading, notFound, inv, handleDownloadPdf]);
+  }, [layout, wantsAutoDownload, loading, notFound, inv, assetsReady, handleDownloadPdf]);
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-neutral-900">
-        Loading invoice…
+        Loading hotel voucher…
       </div>
     );
   }
@@ -117,13 +163,8 @@ function InvoicePrintPageInner() {
     );
   }
 
-  const amountStr = `₹${Number(inv.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const status = (inv.status || '—').toUpperCase();
-
   return (
-    <div className="invoice-pdf-root min-h-screen bg-white">
-      <InvoicePrintStyles />
-      <CrmPdfLetterheadStyles />
+    <>
       <style>{`
         @media print {
           .noPrint { display: none !important; }
@@ -131,11 +172,12 @@ function InvoicePrintPageInner() {
       `}</style>
 
       <PrintPdfToolbar
-        title="Invoice PDF"
+        title="Hotel voucher PDF"
         banner={
-          wantsAutoDownload && layout === 'narrow'
-            ? 'On this screen size we do not auto-start the download. Tap "Download PDF" when you are ready — it is clearer on phones than print-to-PDF.'
-            : null
+          pdfError ??
+          (wantsAutoDownload && layout === 'narrow'
+            ? 'On this screen size we do not auto-start the download. Tap "Download PDF" when you are ready — it is faster and clearer than print-to-PDF on phones.'
+            : null)
         }
         downloadLabel={pdfBusy ? 'Preparing PDF…' : 'Download PDF'}
         onDownloadPdf={handleDownloadPdf}
@@ -144,74 +186,12 @@ function InvoicePrintPageInner() {
 
       <div
         ref={pdfExportRef}
-        className="mx-auto max-w-[210mm] px-4 pb-[max(4rem,env(safe-area-inset-bottom))] pt-1 sm:px-8 sm:pb-16"
+        className="invoice-pdf-root mx-auto min-h-screen w-full max-w-[210mm] overflow-visible bg-white pb-16"
       >
-        <CrmPdfLetterhead subtitle="Tax invoice / billing summary (CRM)" />
-
-        <div className="invoice-pdf-banner pdf-avoid-break">Invoice · {SITE_BRAND.shortName}</div>
-
-        <div className="invoice-pdf-title-row pdf-avoid-break">
-          <h1 className="invoice-pdf-h1">Invoice</h1>
-          <p className="invoice-pdf-invno">{inv.invoice_number}</p>
-        </div>
-
-        <div className="invoice-pdf-grid" role="presentation">
-          <div className="invoice-pdf-cell">
-            <div className="invoice-pdf-label">Bill to</div>
-            <div className="invoice-pdf-value">{inv.customer_name}</div>
-          </div>
-          <div className="invoice-pdf-cell">
-            <div className="invoice-pdf-label">Issue date</div>
-            <div className="invoice-pdf-value">{inv.issue_date}</div>
-          </div>
-          <div className="invoice-pdf-cell">
-            <div className="invoice-pdf-label">Email</div>
-            <div className="invoice-pdf-value">{inv.customer_email?.trim() || '—'}</div>
-          </div>
-          <div className="invoice-pdf-cell">
-            <div className="invoice-pdf-label">Status</div>
-            <div className="invoice-pdf-value">
-              <span className="invoice-pdf-status">{status}</span>
-            </div>
-          </div>
-        </div>
-
-        <table className="invoice-pdf-table pdf-avoid-break">
-          <thead>
-            <tr>
-              <th style={{ width: '70%' }}>Description</th>
-              <th style={{ width: '30%', textAlign: 'right' }}>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <strong>Tour / travel services</strong>
-                <div style={{ marginTop: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--pdf-muted)' }}>
-                  As per agreed package and quotation. Add GST lines in your accounting system if required.
-                </div>
-              </td>
-              <td className="invoice-pdf-amount">{amountStr}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="invoice-pdf-notes pdf-avoid-break">
-          <h3>Notes</h3>
-          <p>{inv.notes?.trim() || '—'}</p>
-        </div>
-
-        <div className="invoice-pdf-footer">
-          <p className="m-0 font-bold text-neutral-900">{SITE_BRAND.legalName}</p>
-          <p className="mt-1 m-0">
-            {SITE_CONTACT.address} · {SITE_CONTACT.email} · {companyPhonesDisplayLine()}
-          </p>
-          <p className="mt-2 m-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
-            CRM-generated summary. Use your official GST invoice where legally required.
-          </p>
-        </div>
+        <InvoicePrintStyles />
+        <HotelVoucherPdf inv={inv} />
       </div>
-    </div>
+    </>
   );
 }
 
