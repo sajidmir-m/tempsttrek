@@ -9,8 +9,8 @@
   --tt-blue-dark: #0284c7;
   --tt-green: #059669;
   --tt-green-deep: #047857;
-  /* Space below fixed public navbar (helpline strip + main nav; allows wrap on small screens) */
-  --site-navbar-offset: 10.5rem;
+  /* Space below fixed public navbar (utility strip + main nav + larger logo) */
+  --site-navbar-offset: 7.75rem;
 }
 
 @theme inline {

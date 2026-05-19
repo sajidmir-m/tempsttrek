@@ -76,8 +76,8 @@ export default function HotelVoucherPdf({ inv }: { inv: InvoiceRow }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="" width={72} height={72} className="hv-logo" crossOrigin="anonymous" />
               <div>
-                <p className="hv-brand-name">TEMPEST TREKS</p>
-                <p className="hv-brand-tag">LIVE THE EXPERIMENT</p>
+                <p className="hv-brand-name">{SITE_BRAND.shortName.toUpperCase()}</p>
+                <p className="hv-brand-tag">{SITE_BRAND.tagline}</p>
               </div>
             </div>
             <div className="hv-contact">
@@ -208,7 +208,7 @@ export default function HotelVoucherPdf({ inv }: { inv: InvoiceRow }) {
       </div>
 
       <footer className="hv-footer">
-        <p>{SITE_BRAND.legalName}</p>
+        <p>{SITE_BRAND.fullName}</p>
         <p>
           Package amount (CRM): ₹
           {Number(inv.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

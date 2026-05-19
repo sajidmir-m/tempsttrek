@@ -12,8 +12,8 @@ import { placeSlugKey } from "@/lib/home-content";
 import { MOCK_PACKAGES } from "@/data/packages";
 import { formatInr } from "@/lib/format-currency";
 
-/** Always read latest homepage CMS from Supabase (no static cache). */
-export const dynamic = "force-dynamic";
+/** ISR: refresh homepage data periodically (faster TTFB than force-dynamic). */
+export const revalidate = 60;
 
 async function getPopularPackages() {
   try {
@@ -141,9 +141,11 @@ const featuredPlacesBase = [
 ];
 
 export default async function Home() {
-  const popularPackages = await getPopularPackages();
-  const testimonials = await getTestimonials();
-  const homeCfg = await fetchHomeContentFromDb();
+  const [popularPackages, testimonials, homeCfg] = await Promise.all([
+    getPopularPackages(),
+    getTestimonials(),
+    fetchHomeContentFromDb(),
+  ]);
 
   const featuredPlaces = featuredPlacesBase.map((place) => {
     const key = placeSlugKey(place.slug);

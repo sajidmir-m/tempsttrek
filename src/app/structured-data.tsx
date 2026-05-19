@@ -1,4 +1,5 @@
 import { SOCIAL_LINKS } from '@/lib/social-links';
+import { SITE_BRAND } from '@/lib/site-contact';
 
 export default function StructuredData() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tempesttrek.example';
@@ -6,9 +7,8 @@ export default function StructuredData() {
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'TravelAgency',
-    name: 'Tempesttrek',
-    description:
-      'Kashmir-based travel agency offering tour packages, off-beat routes, hotel bookings, and transport services',
+    name: SITE_BRAND.fullName,
+    description: SITE_BRAND.description,
     url: baseUrl,
     logo: `${baseUrl}/logo.png`,
     contactPoint: {

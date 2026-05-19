@@ -1,10 +1,13 @@
 /** Single source for Tempest Treks contact details (navbar + footer + contact page). */
 
 export const SITE_BRAND = {
-  legalName: 'Tempest Treks Tour & Travels Holidays',
-  shortName: 'Tempesttrek',
+  legalName: 'Tempest Treks Tour and Travels',
+  tagline: 'LIVE THE EXPERIENCE',
+  /** Full display line for PDFs, vouchers, and letterhead */
+  fullName: 'Tempest Treks Tour and Travels — LIVE THE EXPERIENCE',
+  shortName: 'Tempest Treks',
   description:
-    'Tempest Treks Tour and Travels is an online travel platform which provides you great holiday packages.',
+    'Tempest Treks Tour and Travels — LIVE THE EXPERIENCE. Your Kashmir holiday partner for packages, cabs, and custom trips.',
 } as const;
 
 export const SITE_CONTACT = {

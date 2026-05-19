@@ -12,7 +12,7 @@ export default function PrivacyPage() {
         <h1 className="text-3xl md:text-4xl font-bold">Privacy Policy</h1>
         <p className="text-teal-100 mt-2 max-w-2xl mx-auto text-sm">
           We respect your privacy. This page summarises how we collect and use information when you use our website
-          or book with Tempest Treks Tour &amp; Travels Holidays.
+          or book with Tempest Treks Tour and Travels — LIVE THE EXPERIENCE.
         </p>
       </div>
       <div className="max-w-3xl mx-auto px-4 py-12 prose prose-gray text-gray-800">

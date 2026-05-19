@@ -30,7 +30,7 @@ export default function ScrollReveal({ children, width = 'fit-content', delay = 
         }}
         initial="hidden"
         animate={animate}
-        transition={{ duration: 0.8, delay: delay, ease: 'easeOut' }}
+        transition={{ duration: 0.45, delay: delay, ease: 'easeOut' }}
       >
         {children}
       </motion.div>

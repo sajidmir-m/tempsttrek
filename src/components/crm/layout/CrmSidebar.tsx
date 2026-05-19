@@ -7,6 +7,7 @@ import { BarChart3, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import type { CrmNavEntry } from '@/config/crm-nav';
 import { CRM_NAV } from '@/config/crm-nav';
+import { SITE_BRAND } from '@/lib/site-contact';
 
 const STORAGE_KEY = 'crm_sidebar_collapsed';
 
@@ -134,7 +135,7 @@ export default function CrmSidebar({
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 px-3 py-4">
         {!collapsed && (
           <div className="min-w-0 px-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-teal-400/90">Tempesttrek</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-teal-400/90">{SITE_BRAND.shortName}</p>
             <p className="text-lg font-extrabold leading-tight tracking-tight">Travel ERP</p>
           </div>
         )}

@@ -1,240 +1,370 @@
-
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Phone, MessageCircle, Mail, Facebook, Instagram, Youtube } from 'lucide-react';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { usePathname } from 'next/navigation';
+import {
+  Menu,
+  X,
+  Phone,
+  MessageCircle,
+  Mail,
+  Facebook,
+  Instagram,
+  Youtube,
+  ArrowRight,
+} from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import Image from 'next/image';
 import { SOCIAL_LINKS } from '@/lib/social-links';
-import { SITE_CONTACT, formatPhoneDisplay, telHref } from '@/lib/site-contact';
+import { SITE_BRAND, SITE_CONTACT, formatPhoneDisplay, telHref } from '@/lib/site-contact';
+import { cn } from '@/lib/cn';
+
+const navLinks: Array<{ name: string; href: string }> = [
+  { name: 'Home', href: '/' },
+  { name: 'Packages', href: '/packages' },
+  { name: 'Cabs', href: '/cabs' },
+  { name: 'Off Beat', href: '/offbeat' },
+  { name: 'Car Rental', href: '/car-rental' },
+  { name: 'About', href: '/about' },
+  { name: 'Social', href: '/social' },
+];
+
+function isActivePath(pathname: string, href: string) {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
-    setIsScrolled(latest > 50);
+    setIsScrolled(latest > 24);
   });
-
-  const navLinks: Array<{ name: string; href: string }> = [
-    { name: 'Home', href: '/' },
-    { name: 'Packages', href: '/packages' },
-    { name: 'Cabs', href: '/cabs' },
-    { name: 'Off Beat', href: '/offbeat' },
-    { name: 'Car Rental', href: '/car-rental' },
-    { name: 'About', href: '/about' },
-    { name: 'Social', href: '/social' },
-  ];
 
   const helpline = SITE_CONTACT.helpline24;
   const waDigits = helpline.replace(/\D/g, '');
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div className="bg-emerald-950 text-emerald-100/95 text-[11px] sm:text-xs border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-          <span className="font-bold text-emerald-300 shrink-0">24×7 Helpline</span>
-          <a href={telHref(helpline)} className="font-semibold text-white hover:text-emerald-200 shrink-0">
+      {/* Utility strip */}
+      <motion.div
+        initial={false}
+        animate={{ height: isScrolled ? 0 : 'auto', opacity: isScrolled ? 0 : 1 }}
+        className="overflow-hidden border-b border-white/[0.08] bg-[#0c1f1a]/95 backdrop-blur-md"
+      >
+        <motion.div
+          className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2 text-[11px] sm:px-6 sm:text-xs lg:px-8"
+          aria-hidden={isScrolled}
+        >
+          <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-300/95">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            </span>
+            24×7 Helpline
+          </span>
+          <a
+            href={telHref(helpline)}
+            className="font-semibold text-white/95 transition hover:text-emerald-200"
+          >
             {formatPhoneDisplay(helpline)}
           </a>
-          <span className="hidden sm:inline text-white/25 select-none">|</span>
+          <span className="hidden text-white/20 sm:inline">|</span>
           <a
             href={`mailto:${SITE_CONTACT.email}`}
-            className="hidden sm:inline hover:text-white truncate max-w-[200px] md:max-w-none"
+            className="hidden truncate text-white/75 transition hover:text-white sm:inline md:max-w-none"
           >
             {SITE_CONTACT.email}
           </a>
-          <span className="hidden lg:inline text-white/25 select-none">|</span>
-          <span className="hidden lg:inline text-emerald-100/90">{SITE_CONTACT.officeHours}</span>
-          <div className="flex items-center gap-1 sm:ml-auto shrink-0">
-            <a
-              href={SOCIAL_LINKS.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-md hover:bg-white/10 text-emerald-200 hover:text-white transition-colors"
-              aria-label="Facebook"
-            >
-              <Facebook size={16} />
-            </a>
-            <a
-              href={SOCIAL_LINKS.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-md hover:bg-white/10 text-emerald-200 hover:text-white transition-colors"
-              aria-label="Instagram"
-            >
-              <Instagram size={16} />
-            </a>
-            <a
-              href={SOCIAL_LINKS.youtubeChannel}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-md hover:bg-white/10 text-emerald-200 hover:text-white transition-colors"
-              aria-label="YouTube"
-            >
-              <Youtube size={17} />
-            </a>
+          <div className="ml-auto flex items-center gap-0.5">
+            {[
+              { href: SOCIAL_LINKS.facebook, label: 'Facebook', Icon: Facebook },
+              { href: SOCIAL_LINKS.instagram, label: 'Instagram', Icon: Instagram },
+              { href: SOCIAL_LINKS.youtubeChannel, label: 'YouTube', Icon: Youtube },
+            ].map(({ href, label, Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg p-1.5 text-white/60 transition hover:bg-white/10 hover:text-white"
+                aria-label={label}
+              >
+                <Icon size={15} />
+              </a>
+            ))}
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
+      {/* Main navigation */}
       <motion.nav
-        initial={{ y: -20, opacity: 0 }}
+        initial={{ y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.35 }}
-        className={`w-full transition-all duration-300 ${
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className={cn(
+          'w-full transition-[background,box-shadow,padding] duration-500 ease-out',
           isScrolled
-            ? 'bg-white/90 backdrop-blur-md shadow-lg py-3'
-            : 'bg-gradient-to-r from-emerald-800 via-teal-700 to-sky-800 py-4'
-        }`}
+            ? 'border-b border-slate-200/80 bg-white/85 py-2.5 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur-xl'
+            : 'border-b border-white/10 bg-gradient-to-b from-slate-950/75 via-slate-900/55 to-transparent py-3.5 backdrop-blur-sm'
+        )}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="relative w-14 h-14 rounded-full bg-white/90 overflow-hidden border border-white/40 shadow-sm">
-                <Image src="/logo.png" alt="Tempest Treks" fill className="object-contain p-1" priority />
+        <motion.div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4">
+            {/* Brand */}
+            <Link href="/" className="group flex min-w-0 items-center gap-3.5 sm:gap-4">
+              <div
+                className={cn(
+                  'relative h-14 w-14 shrink-0 overflow-hidden rounded-xl ring-1 transition duration-300 sm:h-16 sm:w-16 lg:h-[4.5rem] lg:w-[4.5rem]',
+                  isScrolled
+                    ? 'bg-white ring-slate-200/80 shadow-sm group-hover:shadow-md'
+                    : 'bg-white/95 ring-white/30 shadow-lg shadow-black/20 group-hover:ring-white/50'
+                )}
+              >
+                <Image
+                  src="/logo.png"
+                  alt={SITE_BRAND.shortName}
+                  fill
+                  className="object-contain p-1.5"
+                  priority
+                />
               </div>
-              <div className="flex flex-col">
+              <div className="hidden min-w-0 flex-col sm:flex">
                 <span
-                  className={`text-xl sm:text-2xl font-extrabold tracking-tight ${
-                    isScrolled ? 'text-emerald-900' : 'text-white'
-                  }`}
+                  className={cn(
+                    'truncate text-base font-bold tracking-tight transition-colors sm:text-lg',
+                    isScrolled ? 'text-slate-900' : 'text-white'
+                  )}
                 >
-                  Tempesttrek
+                  {SITE_BRAND.shortName}
                 </span>
                 <span
-                  className={`text-[10px] sm:text-xs tracking-widest uppercase ${
-                    isScrolled ? 'text-sky-700' : 'text-emerald-100'
-                  }`}
+                  className={cn(
+                    'truncate text-[10px] font-medium uppercase tracking-[0.2em] transition-colors',
+                    isScrolled ? 'text-emerald-700' : 'text-emerald-200/90'
+                  )}
                 >
-                  Kashmir Journeys
+                  {SITE_BRAND.tagline}
                 </span>
               </div>
             </Link>
 
-            <div className="hidden md:flex items-center space-x-5 lg:space-x-6">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`font-medium text-sm transition-colors ${
-                    isScrolled ? 'text-gray-800 hover:text-emerald-600' : 'text-white/95 hover:text-emerald-200'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
+            {/* Desktop nav */}
+            <motion.div
+              className={cn(
+                'hidden items-center gap-1 rounded-2xl p-1 md:flex',
+                isScrolled ? 'bg-slate-100/80' : 'bg-white/[0.08] ring-1 ring-white/10'
+              )}
+            >
+              {navLinks.map((link) => {
+                const active = isActivePath(pathname, link.href);
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className={cn(
+                      'relative rounded-xl px-3.5 py-2 text-[13px] font-semibold transition-all duration-200 lg:px-4',
+                      active
+                        ? isScrolled
+                          ? 'bg-white text-emerald-800 shadow-sm'
+                          : 'bg-white/15 text-white shadow-inner'
+                        : isScrolled
+                          ? 'text-slate-600 hover:bg-white/70 hover:text-slate-900'
+                          : 'text-white/85 hover:bg-white/10 hover:text-white'
+                    )}
+                  >
+                    {link.name}
+                    {active ? (
+                      <span
+                        className={cn(
+                          'absolute bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full',
+                          isScrolled ? 'bg-emerald-600' : 'bg-emerald-300'
+                        )}
+                      />
+                    ) : null}
+                  </Link>
+                );
+              })}
+            </motion.div>
 
+            {/* Desktop actions */}
+            <motion.div className="hidden items-center gap-2 md:flex lg:gap-3">
               <a
                 href={telHref(helpline)}
-                className={`hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all',
                   isScrolled
-                    ? 'border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white'
-                    : 'border-white/70 text-white/95 hover:bg-white/15'
-                }`}
+                    ? 'text-slate-700 hover:bg-slate-100'
+                    : 'text-white/90 hover:bg-white/10'
+                )}
               >
-                <Phone size={16} />
-                <span>Helpline</span>
+                <span
+                  className={cn(
+                    'flex h-8 w-8 items-center justify-center rounded-lg',
+                    isScrolled ? 'bg-emerald-50 text-emerald-700' : 'bg-white/15 text-white'
+                  )}
+                >
+                  <Phone size={15} />
+                </span>
+                <span className="hidden lg:inline">Call us</span>
               </a>
 
               <Link
                 href="/contact"
-                className={`px-5 py-2.5 rounded-full font-semibold text-sm transition-all transform hover:scale-105 ${
+                className={cn(
+                  'group inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold shadow-lg transition-all duration-300',
                   isScrolled
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md'
-                    : 'bg-white text-emerald-900 hover:bg-emerald-50 shadow-md'
-                }`}
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:brightness-105'
+                    : 'bg-white text-emerald-900 shadow-black/20 hover:bg-emerald-50'
+                )}
               >
                 Book Now
+                <ArrowRight
+                  size={16}
+                  className="transition-transform group-hover:translate-x-0.5"
+                />
               </Link>
-            </div>
+            </motion.div>
 
-            <div className="md:hidden flex items-center gap-2">
+            {/* Mobile toggle */}
+            <motion.div className="flex items-center gap-2 md:hidden">
               <a
                 href={telHref(helpline)}
-                className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold ${
-                  isScrolled ? 'bg-emerald-700 text-white' : 'bg-white/15 text-white border border-white/35'
-                }`}
+                className={cn(
+                  'inline-flex h-10 w-10 items-center justify-center rounded-xl transition',
+                  isScrolled
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-white/15 text-white ring-1 ring-white/20'
+                )}
+                aria-label="Call helpline"
               >
-                <Phone size={12} />
-                <span>24×7</span>
+                <Phone size={18} />
               </a>
               <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`p-2 rounded-md border ${
-                  isScrolled ? 'text-gray-900 border-gray-200 bg-white' : 'text-white border-white/40 bg-white/10'
-                }`}
+                type="button"
+                onClick={() => setIsOpen((o) => !o)}
+                className={cn(
+                  'inline-flex h-10 w-10 items-center justify-center rounded-xl transition',
+                  isScrolled
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-white/15 text-white ring-1 ring-white/25'
+                )}
+                aria-expanded={isOpen}
+                aria-label={isOpen ? 'Close menu' : 'Open menu'}
               >
                 {isOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
-        <motion.div
-          initial={false}
-          animate={isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 }}
-          className="md:hidden overflow-hidden bg-white/95 backdrop-blur-xl border-t border-gray-100"
-        >
-          <div className="px-4 pt-2 pb-6 space-y-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {isOpen ? (
+            <>
+              <motion.button
+                type="button"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 top-[var(--site-navbar-offset)] z-40 bg-slate-900/40 backdrop-blur-sm md:hidden"
+                aria-label="Close menu"
                 onClick={() => setIsOpen(false)}
-                className="block px-3 py-3 rounded-lg text-base font-medium text-gray-800 hover:text-emerald-700 hover:bg-emerald-50"
+              />
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="relative z-50 border-t border-slate-200/80 bg-white shadow-2xl md:hidden"
               >
-                {link.name}
-              </Link>
-            ))}
-            <div className="pt-4 border-t border-gray-100 mt-4">
-              <div className="space-y-3 px-3 text-gray-800">
-                <div className="flex items-center gap-3">
-                  <Phone size={18} className="text-emerald-600 shrink-0" />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wide text-gray-600">24×7 Helpline</p>
-                    <a href={telHref(helpline)} className="text-sm font-semibold">
-                      {formatPhoneDisplay(helpline)}
+                <div className="mx-auto max-w-7xl space-y-1 px-4 py-4">
+                  {navLinks.map((link, i) => {
+                    const active = isActivePath(pathname, link.href);
+                    return (
+                      <motion.div
+                        key={link.name}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                      >
+                        <Link
+                          href={link.href}
+                          onClick={() => setIsOpen(false)}
+                          className={cn(
+                            'flex items-center justify-between rounded-xl px-4 py-3.5 text-[15px] font-semibold transition',
+                            active
+                              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20'
+                              : 'text-slate-800 hover:bg-slate-50'
+                          )}
+                        >
+                          {link.name}
+                          {active ? <ArrowRight size={18} className="opacity-90" /> : null}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+
+                  <div className="mt-4 space-y-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+                    <a
+                      href={telHref(helpline)}
+                      className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-100"
+                    >
+                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                        <Phone size={18} />
+                      </span>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                          24×7 Helpline
+                        </p>
+                        <p className="text-sm font-bold text-slate-900">{formatPhoneDisplay(helpline)}</p>
+                      </div>
                     </a>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MessageCircle size={18} className="text-green-600 shrink-0" />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wide text-gray-600">WhatsApp</p>
                     <a
                       href={`https://wa.me/91${waDigits}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-semibold"
+                      className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-100"
                     >
-                      {formatPhoneDisplay(helpline)}
+                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-700">
+                        <MessageCircle size={18} />
+                      </span>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">WhatsApp</p>
+                        <p className="text-sm font-bold text-slate-900">{formatPhoneDisplay(helpline)}</p>
+                      </div>
+                    </a>
+                    <a
+                      href={`mailto:${SITE_CONTACT.email}`}
+                      className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-100"
+                    >
+                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-100 text-sky-700">
+                        <Mail size={18} />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email</p>
+                        <p className="truncate text-sm font-bold text-slate-900">{SITE_CONTACT.email}</p>
+                      </div>
                     </a>
                   </div>
+
+                  <Link
+                    href="/contact"
+                    onClick={() => setIsOpen(false)}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-4 text-base font-bold text-white shadow-lg shadow-emerald-600/30"
+                  >
+                    Book your trip
+                    <ArrowRight size={18} />
+                  </Link>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Mail size={18} className="text-sky-700 shrink-0" />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wide text-gray-600">Email</p>
-                    <a href={`mailto:${SITE_CONTACT.email}`} className="text-sm font-semibold break-all">
-                      {SITE_CONTACT.email}
-                    </a>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-600">{SITE_CONTACT.officeHours}</p>
-                <Link
-                  href="/contact"
-                  onClick={() => setIsOpen(false)}
-                  className="block w-full text-center px-5 py-3 rounded-lg bg-emerald-600 text-white font-semibold shadow-md mt-2"
-                >
-                  Book Your Trip
-                </Link>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+              </motion.div>
+            </>
+          ) : null}
+        </AnimatePresence>
       </motion.nav>
     </header>
   );

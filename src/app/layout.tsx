@@ -6,6 +6,7 @@ import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import { ToastProvider } from "@/components/ui/Toast";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import StructuredData from "./structured-data";
+import { SITE_BRAND } from "@/lib/site-contact";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,14 +20,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tempesttrek - Kashmir | Tour Packages & Off-Beat Travel",
-  description:
-    "Explore Kashmir with Tempesttrek — customized tours, packages, off-beat routes, car hire and private cab services across Srinagar, Gulmarg, Pahalgam, and beyond.",
+  title: `${SITE_BRAND.shortName} - Kashmir | Tour Packages & Off-Beat Travel`,
+  description: SITE_BRAND.description,
   keywords:
-    "Kashmir tours, Srinagar travel, Tempesttrek, Kashmir packages, Kashmir cab rental, off beat Kashmir",
-  authors: [{ name: "Tempesttrek" }],
-  creator: "Tempesttrek",
-  publisher: "Tempesttrek",
+    `Kashmir tours, Srinagar travel, ${SITE_BRAND.shortName}, Kashmir packages, Kashmir cab rental, off beat Kashmir`,
+  authors: [{ name: SITE_BRAND.legalName }],
+  creator: SITE_BRAND.legalName,
+  publisher: SITE_BRAND.legalName,
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.tempesttrek.example"),
   icons: {
     icon: [
@@ -43,15 +43,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.tempesttrek.example",
-    siteName: "Tempesttrek",
-    title: "Tempesttrek - Kashmir | Tour Packages & Off-Beat Travel",
-    description:
-      "Discover Kashmir with Tempesttrek — tours, packages, off-beat experiences, cab hire & local guidance.",
+    siteName: SITE_BRAND.shortName,
+    title: `${SITE_BRAND.shortName} - Kashmir | Tour Packages & Off-Beat Travel`,
+    description: SITE_BRAND.description,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tempesttrek - Kashmir Travel",
-    description: "Tempesttrek crafts Kashmir itineraries, transport, and unforgettable mountain journeys.",
+    title: `${SITE_BRAND.shortName} - Kashmir Travel`,
+    description: SITE_BRAND.description,
   },
   robots: {
     index: true,

@@ -53,7 +53,7 @@ export function CrmPdfLetterhead({ subtitle }: { subtitle: string }) {
       <img src="/logo.png" alt="" width={56} height={56} className="crm-pdf-letterhead-logo" />
       <div className="crm-pdf-letterhead-body">
         <p className="crm-pdf-letterhead-name">{SITE_BRAND.legalName}</p>
-        <p className="crm-pdf-letterhead-sub">{subtitle}</p>
+        <p className="crm-pdf-letterhead-sub">{SITE_BRAND.tagline} · {subtitle}</p>
         <div className="crm-pdf-letterhead-lines">
           <p>{SITE_CONTACT.address}</p>
           <p>

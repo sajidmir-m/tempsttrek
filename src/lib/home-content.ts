@@ -18,8 +18,8 @@ export type HomeContentConfig = {
 };
 
 export const DEFAULT_HERO_SLIDES: HeroSlide[] = [
-  { src: '/videos/hero-bg.mp4', title: 'Kashmir', subtitle: 'Spring Meadows & Lakes' },
-  { src: '/videos/hero-2.mp4', title: 'Valleys', subtitle: 'In Full Bloom' },
+  { src: '/Ladakh.jpeg', title: 'Kashmir', subtitle: 'Spring Meadows & Lakes' },
+  { src: '/gulmarg.jpeg', title: 'Valleys', subtitle: 'In Full Bloom' },
 ];
 
 export const DEFAULT_SPLIT_LEFT: SplitPanel = {

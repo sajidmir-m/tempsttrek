@@ -15,7 +15,7 @@ import { CrmSkeleton } from '../ui/CrmSkeleton';
 import CrmEmptyState from '../ui/CrmEmptyState';
 import Link from 'next/link';
 import { Pencil, Plus, Receipt, Trash2, FileDown } from 'lucide-react';
-import { syncPaidInvoiceToLedger, type InvoiceForSync } from '@/lib/ledger-invoice-sync';
+import { syncInvoiceToLedger, unlinkInvoiceFromLedger, type InvoiceForSync } from '@/lib/ledger-invoice-sync';
 
 export type InvoiceRow = {
   id: string;
@@ -142,7 +142,6 @@ export default function CrmInvoicesManager() {
     };
     setSaving(true);
     try {
-      const prevStatus = modal?.mode === 'edit' ? modal.row.status : null;
       let savedId = modal?.mode === 'edit' ? modal.row.id : '';
 
       if (modal?.mode === 'edit') {
@@ -161,25 +160,27 @@ export default function CrmInvoicesManager() {
         showToast('Invoice added', 'success');
       }
 
-      if (form.status === 'paid' && (prevStatus !== 'paid' || modal?.mode === 'create')) {
-        const invoiceId = modal?.mode === 'edit' ? modal.row.id : savedId;
-        if (invoiceId) {
+      const invoiceId = modal?.mode === 'edit' ? modal.row.id : savedId;
+      if (invoiceId) {
+        const prevLedgerId = modal?.mode === 'edit' ? modal.row.ledger_id : null;
+        if (form.ledger_id) {
           const syncPayload: InvoiceForSync = {
             id: invoiceId,
             invoice_number: inv,
             customer_name: customer,
             amount,
-            status: 'paid',
+            status: form.status,
             issue_date: form.issue_date,
-            ledger_id: form.ledger_id || null,
-            synced_to_ledger_at: modal?.mode === 'edit' ? modal.row.synced_to_ledger_at : null,
+            ledger_id: form.ledger_id,
           };
-          const sync = await syncPaidInvoiceToLedger(syncPayload);
-          if (sync.ok && form.ledger_id) {
-            showToast('Payment synced to trip ledger', 'success');
-          } else if (!form.ledger_id) {
-            showToast('Paid — select a trip ledger to sync payment into accounting', 'error');
+          const sync = await syncInvoiceToLedger(syncPayload);
+          if (sync.ok) {
+            showToast('Invoice synced to trip ledger', 'success');
+          } else {
+            showToast(sync.message || 'Trip ledger sync failed', 'error');
           }
+        } else if (prevLedgerId) {
+          await unlinkInvoiceFromLedger(invoiceId);
         }
       }
       setModal(null);
@@ -291,7 +292,7 @@ export default function CrmInvoicesManager() {
             ))}
           </CrmSelect>
           <CrmSelect
-            label="Link to trip ledger (auto-sync when paid)"
+            label="Link to trip ledger (auto-syncs on save)"
             value={form.ledger_id}
             onChange={(e) => setForm((f) => ({ ...f, ledger_id: e.target.value }))}
           >
@@ -302,8 +303,10 @@ export default function CrmInvoicesManager() {
               </option>
             ))}
           </CrmSelect>
-          {form.status === 'paid' && form.ledger_id ? (
-            <p className="text-xs text-teal-700">Saving as paid will add a client payment line to the selected ledger.</p>
+          {form.ledger_id ? (
+            <p className="text-xs text-teal-700">
+              Saving updates the linked trip ledger with this invoice amount. Paid status records client payment in cashbook.
+            </p>
           ) : null}
           <CrmTextarea
             label="Notes (plain text or JSON for voucher stays/cab)"

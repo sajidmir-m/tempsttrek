@@ -195,7 +195,7 @@ function ItineraryPrintPageInner() {
       >
         <CrmPdfLetterhead subtitle="Kashmir tours · Guest itinerary" />
 
-        <div className="itinerary-pdf-brandbar pdf-avoid-break">Tempesttrek · Kashmir · Tour itinerary</div>
+        <div className="itinerary-pdf-brandbar pdf-avoid-break">{SITE_BRAND.fullName} · Tour itinerary</div>
 
         <h1 className="itinerary-pdf-title">{String(itin.title ?? 'Itinerary')}</h1>
         <p className="itinerary-pdf-sub">Confirmed plan &amp; inclusions summary (subject to voucher)</p>
