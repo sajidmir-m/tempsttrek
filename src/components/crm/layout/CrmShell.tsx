@@ -3,11 +3,13 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { getSafeSession } from '@/lib/supabase-auth';
 import { resolvePortalRole, type PortalRole } from '@/lib/portal-role';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import CrmSidebar, { readInitialSidebarCollapsed } from './CrmSidebar';
 import CrmTopBar from './CrmTopBar';
+import { CrmThemeProvider } from '@/contexts/CrmThemeContext';
 
 export default function CrmShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -42,7 +44,7 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
       setRole(resolvePortalRole(data?.role));
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => applySession(session));
+    void getSafeSession().then(({ session }) => applySession(session));
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -78,7 +80,8 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
   }, [mobileOpen, closeMobile]);
 
   return (
-    <div className="flex min-h-dvh bg-slate-100/90 text-slate-900">
+    <CrmThemeProvider>
+    <div className="crm-shell flex min-h-dvh bg-slate-100/90 text-slate-900">
       <div className="hidden lg:flex lg:shrink-0 lg:sticky lg:top-0 lg:h-dvh lg:py-0">
         <CrmSidebar
           email={email}
@@ -93,7 +96,7 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
         <CrmTopBar onOpenMobileMenu={() => setMobileOpen(true)} email={email} />
         <main
           className={cn(
-            'mx-auto min-w-0 w-full max-w-[1600px] flex-1 px-4 sm:px-6 lg:px-8',
+            'crm-main mx-auto min-w-0 w-full max-w-[1600px] flex-1 px-4 sm:px-6 lg:px-8',
             isPrintView ? 'pb-6 pt-1 sm:pb-8 sm:pt-2' : 'py-6'
           )}
         >
@@ -133,5 +136,6 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
     </div>
+    </CrmThemeProvider>
   );
 }

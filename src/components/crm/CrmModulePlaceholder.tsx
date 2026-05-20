@@ -21,7 +21,7 @@ export default function CrmModulePlaceholder({
   adminHint?: string;
 }) {
   return (
-    <div className="mx-auto max-w-xl rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-10 shadow-lg shadow-slate-200/40">
+    <div className="crm-surface mx-auto max-w-xl rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-10 shadow-lg shadow-slate-200/40">
       <div className="text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-600 to-sky-700 text-white shadow-md">
           <Icon size={28} aria-hidden />

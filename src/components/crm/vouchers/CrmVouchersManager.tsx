@@ -146,7 +146,7 @@ export default function CrmVouchersManager() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="crm-surface space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl">Manage Vouchers</h1>
@@ -185,7 +185,7 @@ export default function CrmVouchersManager() {
             {filtered.map((r) => (
               <CrmTr key={r.id}>
                 <CrmTd className="font-mono text-xs font-semibold text-teal-800">{r.code}</CrmTd>
-                <CrmTd className="font-medium text-slate-900">{r.title}</CrmTd>
+                <CrmTd className="font-semibold text-slate-950">{r.title}</CrmTd>
                 <CrmTd className="hidden sm:table-cell">{r.voucher_type}</CrmTd>
                 <CrmTd>
                   <CrmBadge tone={voucherStatusTone(r.status)}>{r.status}</CrmBadge>

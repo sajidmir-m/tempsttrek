@@ -1,5 +1,10 @@
+import AssignCallPageShell from '@/components/crm/assign-call/AssignCallPageShell';
 import LeadSourceReport from '@/components/crm/leads/LeadSourceReport';
 
 export default function LeadSourcePage() {
-  return <LeadSourceReport />;
+  return (
+    <AssignCallPageShell>
+      <LeadSourceReport />
+    </AssignCallPageShell>
+  );
 }

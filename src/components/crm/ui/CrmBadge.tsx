@@ -47,9 +47,9 @@ export function followupStatusTone(status: string | null | undefined): keyof typ
 
 export function leadStatusTone(status: string | null | undefined): keyof typeof tone {
   const s = (status || '').toLowerCase();
-  if (s === 'confirmed') return 'success';
+  if (s === 'converted' || s === 'confirmed') return 'success';
   if (s === 'closed') return 'neutral';
-  if (s === 'quoted') return 'info';
+  if (s === 'follow_up' || s === 'quoted') return 'info';
   if (s === 'contacted') return 'warning';
   return 'default';
 }

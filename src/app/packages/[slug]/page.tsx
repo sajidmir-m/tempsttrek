@@ -85,12 +85,16 @@ export default function PackageDetail({ params }: { params: Promise<{ slug: stri
     
     try {
       // Prepare payload
-      const payload: any = {
+      const travelDate = String(formData.get('date') || '').trim();
+      const payload: Record<string, unknown> = {
         name: formData.get('name'),
         email: formData.get('email'),
         phone: formData.get('phone'),
-        // travel_date is not in schema, so we append it to message
-        message: `Booking Inquiry for: ${pkg?.title}\nTravel Date: ${formData.get('date')}`, 
+        message: `Booking inquiry for: ${pkg?.title}${travelDate ? `\nTravel date: ${travelDate}` : ''}`,
+        hotel_requirement: pkg?.title || null,
+        check_in: travelDate || null,
+        source: 'package-booking',
+        status: 'pending',
       };
 
       // Only include package_id if it's a valid UUID (Real Firebase Data)

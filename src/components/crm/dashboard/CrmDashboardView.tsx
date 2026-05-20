@@ -12,6 +12,7 @@ import CrmDataRow from './CrmDataRow';
 import CrmStatCard from './CrmStatCard';
 import { endOfDay, parseYmd, startOfDay, yyyyMmDd } from './date-utils';
 import type { ArrivalRow, FollowupRow } from './types';
+import CrmLeadAnalytics from './CrmLeadAnalytics';
 
 const CrmSummaryChart = dynamic(() => import('./CrmSummaryChart'), {
   ssr: false,
@@ -91,7 +92,9 @@ export default function CrmDashboardView() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="crm-surface space-y-6">
+      <CrmLeadAnalytics />
+
       <CrmDateRangeControl
         fromDate={fromDate}
         toDate={toDate}

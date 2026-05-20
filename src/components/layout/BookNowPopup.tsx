@@ -125,6 +125,9 @@ export default function BookNowPopup() {
           email: form.email.trim(),
           phone: form.phone.trim(),
           message,
+          hotel_requirement: form.destination.trim() || null,
+          check_in: form.travel_date || null,
+          source: 'book-now',
           status: 'pending',
         })
         .select('id')

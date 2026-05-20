@@ -6,11 +6,13 @@ export default function CrmDialog({
   open,
   title,
   onClose,
+  wide,
   children,
 }: {
   open: boolean;
   title: string;
   onClose: () => void;
+  wide?: boolean;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -31,7 +33,7 @@ export default function CrmDialog({
       onClick={onClose}
     >
       <div
-        className="max-h-[min(90vh,800px)] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/10"
+        className={`crm-surface max-h-[min(90vh,800px)] w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl shadow-slate-900/10 ${wide ? 'max-w-3xl' : 'max-w-lg'}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="crm-dialog-title"

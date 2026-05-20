@@ -151,7 +151,7 @@ export default function CrmExpensesManager() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="crm-surface space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl">Manage Expenses</h1>
@@ -190,7 +190,7 @@ export default function CrmExpensesManager() {
             {filtered.map((r) => (
               <CrmTr key={r.id}>
                 <CrmTd className="whitespace-nowrap text-xs text-slate-600">{r.expense_date}</CrmTd>
-                <CrmTd className="font-medium text-slate-900">{r.title}</CrmTd>
+                <CrmTd className="font-semibold text-slate-950">{r.title}</CrmTd>
                 <CrmTd className="hidden sm:table-cell">{formatCategoryLabel(r.category)}</CrmTd>
                 <CrmTd>₹{Number(r.amount).toLocaleString()}</CrmTd>
                 <CrmTd className="text-right">

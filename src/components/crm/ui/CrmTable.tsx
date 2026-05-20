@@ -29,5 +29,7 @@ export function CrmTh({ children, className, scope = 'col' }: { children: React.
 }
 
 export function CrmTd({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <td className={cn('px-4 py-3 text-slate-700', className)}>{children}</td>;
+  return (
+    <td className={cn('px-4 py-3 text-slate-800', className)}>{children}</td>
+  );
 }

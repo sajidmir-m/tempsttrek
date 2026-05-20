@@ -15,6 +15,7 @@ import {
   BookOpen,
   UserPlus,
   ClipboardList,
+  MessageSquare,
 } from 'lucide-react';
 
 export type CrmNavEntry = {
@@ -47,6 +48,7 @@ export const CRM_NAV: CrmNavEntry[] = [
   { id: 'users', label: 'Users', href: '/crm/users', icon: Users },
   { id: 'ledger', label: 'Ledger', href: '/crm/ledger', icon: BookOpen },
   { id: 'leads', label: 'Manage Leads', href: '/crm/manage-leads', icon: UserPlus },
+  { id: 'inquiries', label: 'Inquiries', href: '/crm/manage-inquiries', icon: MessageSquare },
 ];
 
 export function flattenNavLabels(entries: CrmNavEntry[]): { label: string; href: string }[] {

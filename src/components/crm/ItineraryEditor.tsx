@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Plus, Save, Trash2, Loader2, UploadCloud, FileText } from 'lucide-react';
 import type { CRMItineraryAssetKind, CRMItineraryAssetRow, CRMItineraryRow, ItineraryDay, ItinerarySections } from './types';
+import CrmItineraryHotelsPicker from './itinerary/CrmItineraryHotelsPicker';
 
 function isMissingCrmItineraryAssetsTable(err: unknown): boolean {
   const msg =
@@ -343,7 +344,7 @@ export default function ItineraryEditor({
   if (loading) return <p className="text-gray-500 py-10">Loading itinerary…</p>;
 
   return (
-    <div className="min-w-0 rounded-2xl border border-gray-100 bg-white shadow-sm">
+    <div className="crm-surface min-w-0 rounded-2xl border border-gray-100 bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-700">Itinerary</p>
@@ -664,6 +665,12 @@ export default function ItineraryEditor({
             </div>
           </div>
         </div>
+
+        <CrmItineraryHotelsPicker
+          itineraryId={itineraryId}
+          sections={sections}
+          onSectionsChange={(next) => setRow((p) => ({ ...p, sections: next }))}
+        />
 
         <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="min-w-0 rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">

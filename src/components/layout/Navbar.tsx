@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { mergeHomeContent } from '@/lib/home-content';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -39,7 +41,18 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [logoSrc, setLogoSrc] = useState('/logo.png');
+  const [brandTitle, setBrandTitle] = useState<string>(SITE_BRAND.shortName);
   const { scrollY } = useScroll();
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase.from('site_settings').select('home_content').eq('id', 1).maybeSingle();
+      const merged = mergeHomeContent(data?.home_content as Parameters<typeof mergeHomeContent>[0]);
+      if (merged.branding?.logoUrl) setLogoSrc(merged.branding.logoUrl);
+      if (merged.branding?.companyName) setBrandTitle(merged.branding.companyName.split(' ').slice(0, 2).join(' ') || SITE_BRAND.shortName);
+    })();
+  }, []);
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
     setIsScrolled(latest > 24);
@@ -126,11 +139,12 @@ export default function Navbar() {
                 )}
               >
                 <Image
-                  src="/logo.png"
-                  alt={SITE_BRAND.shortName}
+                  src={logoSrc}
+                  alt={brandTitle}
                   fill
                   className="object-contain p-1.5"
                   priority
+                  unoptimized={logoSrc.startsWith('http')}
                 />
               </div>
               <div className="flex min-w-0 flex-col">
@@ -140,7 +154,7 @@ export default function Navbar() {
                     isScrolled ? 'text-slate-900' : 'text-white'
                   )}
                 >
-                  {SITE_BRAND.shortName}
+                  {brandTitle}
                 </span>
                 <span
                   className={cn(

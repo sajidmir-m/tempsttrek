@@ -11,6 +11,11 @@
   --tt-green-deep: #047857;
   /* Space below fixed public navbar (utility strip + main nav + larger logo) */
   --site-navbar-offset: 7.75rem;
+
+  /* CRM readable surfaces (light panels in dark mode) */
+  --crm-surface: #ffffff;
+  --crm-surface-fg: #0f172a;
+  --crm-surface-muted: #475569;
 }
 
 @theme inline {
@@ -39,9 +44,8 @@ html {
 
 /* Glassmorphism styles for Intelligence Portal */
 .glass-card {
-  background: rgba(17, 24, 39, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
@@ -71,4 +75,148 @@ html {
 
 .dark-map .leaflet-popup-tip {
   background: rgba(31, 41, 55, 0.95);
+}
+
+/* =============================================================================
+   CRM dark mode — dark shell + sidebar; MAIN CONTENT always light surfaces + dark text
+   ============================================================================= */
+html.crm-dark .crm-shell {
+  background: rgb(15 23 42);
+}
+
+/* Main content area: default readable dark text (not white-on-white) */
+html.crm-dark .crm-shell .crm-main {
+  color: var(--crm-surface-fg);
+}
+
+/* White / card / table surfaces stay white in dark mode */
+html.crm-dark .crm-shell .crm-main .bg-white,
+html.crm-dark .crm-shell .crm-main [class*='bg-white'],
+html.crm-dark .crm-shell .crm-main tbody,
+html.crm-dark .crm-shell .crm-main thead,
+html.crm-dark .crm-shell .crm-main table,
+html.crm-dark .crm-shell .crm-main .rounded-2xl.border-slate-200,
+html.crm-dark .crm-shell .crm-main .rounded-xl.border-slate-200,
+html.crm-dark .crm-shell .crm-main .rounded-2xl.border-gray-100,
+html.crm-dark .crm-shell .crm-main .rounded-xl.border-gray-200,
+html.crm-dark .crm-shell .crm-surface,
+html.crm-dark .crm-shell .crm-surface .bg-white,
+html.crm-dark .crm-shell [role='dialog'] .rounded-2xl.border-slate-200 {
+  background-color: var(--crm-surface) !important;
+}
+
+html.crm-dark .crm-shell .crm-main .border-slate-200,
+html.crm-dark .crm-shell .crm-main .border-gray-100 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Force readable text inside main content & dialogs (overrides dark:text-white utilities) */
+html.crm-dark .crm-shell .crm-main h1,
+html.crm-dark .crm-shell .crm-main h2,
+html.crm-dark .crm-shell .crm-main h3,
+html.crm-dark .crm-shell .crm-main p,
+html.crm-dark .crm-shell .crm-main label,
+html.crm-dark .crm-shell .crm-main td,
+html.crm-dark .crm-shell .crm-main th,
+html.crm-dark .crm-shell .crm-main li,
+html.crm-dark .crm-shell .crm-main dt,
+html.crm-dark .crm-shell .crm-main dd,
+html.crm-dark .crm-shell .crm-main span,
+html.crm-dark .crm-shell .crm-main a:not([class*='bg-teal']):not([class*='bg-red']),
+html.crm-dark .crm-shell .crm-main input,
+html.crm-dark .crm-shell .crm-main select,
+html.crm-dark .crm-shell .crm-main textarea,
+html.crm-dark .crm-shell .crm-main .text-slate-900,
+html.crm-dark .crm-shell .crm-main .text-slate-800,
+html.crm-dark .crm-shell .crm-main .text-slate-700,
+html.crm-dark .crm-shell .crm-main .text-slate-600,
+html.crm-dark .crm-shell .crm-main .text-slate-500,
+html.crm-dark .crm-shell .crm-main .text-slate-950,
+html.crm-dark .crm-shell .crm-main .text-black,
+html.crm-dark .crm-shell .crm-main .dark\:text-white,
+html.crm-dark .crm-shell .crm-main .dark\:text-slate-200,
+html.crm-dark .crm-shell .crm-main .dark\:text-slate-300,
+html.crm-dark .crm-shell .crm-main .dark\:text-slate-400,
+html.crm-dark .crm-shell .crm-surface,
+html.crm-dark .crm-shell .crm-surface *,
+html.crm-dark .crm-shell [role='dialog'] h1,
+html.crm-dark .crm-shell [role='dialog'] h2,
+html.crm-dark .crm-shell [role='dialog'] p,
+html.crm-dark .crm-shell [role='dialog'] label,
+html.crm-dark .crm-shell [role='dialog'] td,
+html.crm-dark .crm-shell [role='dialog'] th,
+html.crm-dark .crm-shell [role='dialog'] span,
+html.crm-dark .crm-shell [role='dialog'] input,
+html.crm-dark .crm-shell [role='dialog'] select,
+html.crm-dark .crm-shell [role='dialog'] textarea,
+html.crm-dark .crm-shell [role='dialog'] .text-slate-900,
+html.crm-dark .crm-shell [role='dialog'] .text-slate-800,
+html.crm-dark .crm-shell [role='dialog'] .text-slate-700,
+html.crm-dark .crm-shell [role='dialog'] .text-slate-600,
+html.crm-dark .crm-shell [role='dialog'] .text-slate-500,
+html.crm-dark .crm-shell [role='dialog'] .dark\:text-white {
+  color: var(--crm-surface-fg) !important;
+}
+
+html.crm-dark .crm-shell .crm-main input,
+html.crm-dark .crm-shell .crm-main select,
+html.crm-dark .crm-shell .crm-main textarea,
+html.crm-dark .crm-shell [role='dialog'] input,
+html.crm-dark .crm-shell [role='dialog'] select,
+html.crm-dark .crm-shell [role='dialog'] textarea {
+  background-color: var(--crm-surface) !important;
+  border-color: #cbd5e1 !important;
+  color: var(--crm-surface-fg) !important;
+}
+
+/* Teal links stay accent-colored on light surfaces */
+html.crm-dark .crm-shell .crm-main a[class*='text-teal'],
+html.crm-dark .crm-shell [role='dialog'] a[class*='text-teal'] {
+  color: #0f766e !important;
+}
+
+/* Muted helper text slightly softer but still visible */
+html.crm-dark .crm-shell .crm-main .text-slate-500,
+html.crm-dark .crm-shell .crm-main .text-slate-400,
+html.crm-dark .crm-shell [role='dialog'] .text-slate-500 {
+  color: var(--crm-surface-muted) !important;
+}
+
+/* Status badges: preserve their semantic colors */
+html.crm-dark .crm-shell .crm-main span[class*='bg-emerald'],
+html.crm-dark .crm-shell .crm-main span[class*='bg-amber'],
+html.crm-dark .crm-shell .crm-main span[class*='bg-sky'],
+html.crm-dark .crm-shell .crm-main span[class*='bg-red'],
+html.crm-dark .crm-shell .crm-main span[class*='bg-slate-8'] {
+  color: inherit !important;
+}
+
+/* Dark marketing/hero bands inside main (ledger header, etc.) */
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark,
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark h1,
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark h2,
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark p,
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark span,
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark label,
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark a,
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark button {
+  color: #f8fafc !important;
+}
+
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+html.crm-dark .crm-shell .crm-main .crm-chrome-dark .text-teal-300 {
+  color: #5eead4 !important;
+}
+
+/* Top bar & sidebar keep dark chrome styling */
+html.crm-dark .crm-shell > div > header,
+html.crm-dark .crm-shell header {
+  color: #e2e8f0;
+}
+
+html.crm-dark .crm-shell aside {
+  color: #e2e8f0;
 }

@@ -53,10 +53,14 @@ import {
   profileRoleBadgeClass,
   isStoredAdmin,
 } from '@/lib/portal-role';
+import { fetchCrmEmployees } from '@/lib/inquiry-lead';
+import { getSafeSession } from '@/lib/supabase-auth';
+import AssignInquiryLead from '@/components/crm/inquiries/AssignInquiryLead';
 
 const CRM_WORKSPACE_LINKS: { href: string; label: string }[] = [
   { href: '/crm/dashboard', label: 'Dashboard' },
   { href: '/crm/manage-leads', label: 'Leads' },
+  { href: '/crm/manage-inquiries', label: 'Inquiries' },
   { href: '/crm/manage-quotations', label: 'Quotations' },
   { href: '/crm/itineraries', label: 'Itineraries' },
   { href: '/crm/assign-call/view', label: 'Assign call · view' },
@@ -181,7 +185,7 @@ export default function AdminPanel() {
 
   useEffect(() => {
     // Check session
-    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+    void getSafeSession().then(({ session }) => {
       setSession(session);
       if (session) fetchData();
     });
@@ -216,9 +220,7 @@ export default function AdminPanel() {
     if (!session?.user?.id || storedProfileRole === null || isStoredAdmin(storedProfileRole)) return;
     let cancelled = false;
     (async () => {
-      const {
-        data: { session: s },
-      } = await supabase.auth.getSession();
+      const { session: s } = await getSafeSession();
       const token = s?.access_token;
       if (!token || cancelled) return;
       const res = await fetch('/api/admin/claim-admin', {
@@ -260,6 +262,27 @@ export default function AdminPanel() {
     
     // Sort by date desc
     allInquiries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    // Enrich with CRM lead assignment (for admin assign-to-employee)
+    const leadIds = allInquiries.map((i: { lead_id?: string }) => i.lead_id).filter(Boolean) as string[];
+    if (leadIds.length > 0) {
+      const [{ data: leads }, employees] = await Promise.all([
+        supabase.from('crm_leads').select('id,assigned_to').in('id', leadIds),
+        fetchCrmEmployees().catch(() => []),
+      ]);
+      const emailById = new Map(employees.map((e) => [e.id, e.email]));
+      const leadMap = new Map((leads || []).map((l) => [l.id, l.assigned_to]));
+      allInquiries = allInquiries.map((inq: { lead_id?: string; assigned_to?: string; assignee_email?: string }) => {
+        if (!inq.lead_id) return inq;
+        const assigned_to = leadMap.get(inq.lead_id) ?? null;
+        return {
+          ...inq,
+          assigned_to,
+          assignee_email: assigned_to ? emailById.get(assigned_to) : null,
+        };
+      });
+    }
+
     setInquiries(allInquiries);
 
     // 2. Fetch Packages
@@ -500,9 +523,7 @@ export default function AdminPanel() {
   const handleUpdateUserRole = async (userId: string, nextRole: 'admin' | 'employee' | 'user') => {
     if (!isAdmin) return;
     try {
-      const {
-        data: { session: s },
-      } = await supabase.auth.getSession();
+      const { session: s } = await getSafeSession();
       const token = s?.access_token;
       if (!token) {
         alert('You are not signed in.');
@@ -542,9 +563,7 @@ export default function AdminPanel() {
     }
     setCreateEmployeeLoading(true);
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const { session } = await getSafeSession();
       const token = session?.access_token;
       if (!token) {
         alert('You are not signed in.');
@@ -846,6 +865,18 @@ export default function AdminPanel() {
           {/* Inquiries View */}
           {activeTab === 'inquiries' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-gray-600">
+                  Website bookings (Book Now, contact, packages). Assign leads to staff in CRM or below.
+                </p>
+                <Link
+                  href="/crm/manage-inquiries"
+                  className="inline-flex items-center gap-1 rounded-xl bg-teal-600 px-4 py-2 text-sm font-bold text-white hover:bg-teal-700"
+                >
+                  <ClipboardList size={16} />
+                  Open CRM Inquiries
+                </Link>
+              </div>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -854,14 +885,18 @@ export default function AdminPanel() {
                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer Info</th>
                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Package / Message</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Source</th>
                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        {isAdmin && (
+                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Assign lead</th>
+                        )}
                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {inquiries.length === 0 ? (
                          <tr>
-                            <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                            <td colSpan={isAdmin ? 7 : 6} className="px-6 py-12 text-center text-gray-500">
                                <MessageSquare size={48} className="mx-auto mb-3 text-gray-300" />
                                <p>No inquiries found yet.</p>
                             </td>
@@ -906,13 +941,37 @@ export default function AdminPanel() {
                                 {inq.message}
                               </p>
                             </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                              {inq.source === 'book-now'
+                                ? 'Book Now'
+                                : inq.source === 'contact'
+                                  ? 'Contact'
+                                  : inq.source === 'package-booking'
+                                    ? 'Package'
+                                    : 'Website'}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 inq.status === 'read' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                               }`}>
                                 {inq.status === 'read' ? 'Read' : 'Pending'}
                               </span>
+                              {inq.assignee_email && (
+                                <p className="mt-1 text-[10px] text-teal-700 font-medium truncate max-w-[120px]" title={inq.assignee_email}>
+                                  → {inq.assignee_email.split('@')[0]}
+                                </p>
+                              )}
                             </td>
+                            {isAdmin && (
+                              <td className="px-6 py-4 min-w-[200px]">
+                                <AssignInquiryLead
+                                  compact
+                                  inquiry={inq}
+                                  currentAssigneeId={inq.assigned_to}
+                                  onAssigned={() => void fetchData()}
+                                />
+                              </td>
+                            )}
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <button 
                                 onClick={() => toggleInquiryStatus(inq.id, inq.status)}
@@ -1712,6 +1771,8 @@ export default function AdminPanel() {
         isOpen={isInquiryModalOpen}
         onClose={() => setIsInquiryModalOpen(false)}
         inquiry={selectedInquiry}
+        isAdmin={isAdmin}
+        onAssigned={() => void fetchData()}
       />
     </div>
   );

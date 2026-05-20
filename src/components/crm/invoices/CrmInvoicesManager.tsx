@@ -205,7 +205,7 @@ export default function CrmInvoicesManager() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="crm-surface space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl">Manage Invoices</h1>
@@ -245,7 +245,7 @@ export default function CrmInvoicesManager() {
             {filtered.map((r) => (
               <CrmTr key={r.id}>
                 <CrmTd className="font-mono text-xs font-semibold text-teal-800">{r.invoice_number}</CrmTd>
-                <CrmTd className="font-medium text-slate-900">{r.customer_name}</CrmTd>
+                <CrmTd className="font-semibold text-slate-950">{r.customer_name}</CrmTd>
                 <CrmTd className="hidden text-xs md:table-cell">{r.issue_date}</CrmTd>
                 <CrmTd>₹{Number(r.amount).toLocaleString()}</CrmTd>
                 <CrmTd>

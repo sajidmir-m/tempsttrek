@@ -42,10 +42,10 @@ export default function LeadSourceReport() {
   const max = useMemo(() => sources.reduce((m, x) => Math.max(m, x.count), 0), [sources]);
 
   return (
-    <div className="space-y-4">
+    <div className="crm-surface space-y-4">
       <div>
         <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl">Lead source</h1>
-        <p className="text-sm text-slate-500">Distribution of `crm_leads.source` (aggregated in browser).</p>
+        <p className="text-sm text-slate-600">Distribution of lead sources (aggregated in browser).</p>
       </div>
       {loading ? (
         <div className="space-y-2">
@@ -59,7 +59,7 @@ export default function LeadSourceReport() {
           <ul className="space-y-3">
             {sources.map((s) => (
               <li key={s.source} className="flex items-center gap-3">
-                <div className="w-28 shrink-0 truncate text-sm font-medium text-slate-800" title={s.source}>
+                <div className="w-28 shrink-0 truncate text-sm font-semibold text-slate-950" title={s.source}>
                   {s.source}
                 </div>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
@@ -68,7 +68,7 @@ export default function LeadSourceReport() {
                     style={{ width: max ? `${Math.max(8, (s.count / max) * 100)}%` : '8%' }}
                   />
                 </div>
-                <span className="w-10 shrink-0 text-right text-sm font-bold tabular-nums text-slate-900">{s.count}</span>
+                <span className="w-10 shrink-0 text-right text-sm font-bold tabular-nums text-slate-950">{s.count}</span>
               </li>
             ))}
           </ul>

@@ -462,8 +462,8 @@ export default function CrmLedgerManager() {
   const vendorLabel = VENDOR_LABEL_BY_CATEGORY[itemForm.category] || 'Vendor name';
 
   return (
-    <div className="space-y-5 pb-32">
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900 p-6 text-white shadow-xl">
+    <div className="crm-surface space-y-5 pb-32">
+      <div className="crm-chrome-dark relative overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900 p-6 text-white shadow-xl">
         <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-teal-400/20 blur-3xl" />
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -615,7 +615,7 @@ export default function CrmLedgerManager() {
                     <CrmTd>
                       <CrmBadge tone="info">{formatCategoryLabel(r.category)}</CrmBadge>
                     </CrmTd>
-                    <CrmTd className="font-medium text-slate-900">{r.vendor}</CrmTd>
+                    <CrmTd className="font-semibold text-slate-950">{r.vendor}</CrmTd>
                     <CrmTd>{formatInr(r.total_cost)}</CrmTd>
                     <CrmTd>{formatInr(r.paid_amount)}</CrmTd>
                     <CrmTd className="font-semibold">{formatInr(r.remaining)}</CrmTd>

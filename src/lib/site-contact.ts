@@ -11,7 +11,7 @@ export const SITE_BRAND = {
 } as const;
 
 export const SITE_CONTACT = {
-  phones: ['7006796123', '9682513124', '9596367536'] as const,
+  phones: ['7006796123', '9682513124'] as const,
   /** Primary helpline shown in navbar */
   helpline24: '7006796123',
   email: 'info@tempesttreks.in',

@@ -182,7 +182,7 @@ export default function ManageQuotationsView() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="crm-surface space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl">Manage Quotations</h1>
@@ -223,7 +223,7 @@ export default function ManageQuotationsView() {
               <CrmTr key={r.id}>
                 <CrmTd className="font-mono text-xs font-semibold text-teal-800">{r.quote_id}</CrmTd>
                 <CrmTd>
-                  <div className="font-medium text-slate-900">{r.crm_leads?.name || '—'}</div>
+                  <div className="font-semibold text-slate-950">{r.crm_leads?.name || '—'}</div>
                   <div className="text-xs text-slate-500">{r.crm_leads?.phone || ''}</div>
                 </CrmTd>
                 <CrmTd className="max-w-[160px] truncate">{r.destination || '—'}</CrmTd>

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import { ToastProvider } from "@/components/ui/Toast";
+import SupabaseAuthRecovery from "@/components/auth/SupabaseAuthRecovery";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import StructuredData from "./structured-data";
 import { SITE_BRAND } from "@/lib/site-contact";
@@ -86,6 +87,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <ToastProvider>
+          <SupabaseAuthRecovery />
           <ConditionalLayout>{children}</ConditionalLayout>
         </ToastProvider>
       </body>

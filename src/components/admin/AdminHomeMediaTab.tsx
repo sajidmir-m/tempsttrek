@@ -7,9 +7,12 @@ import {
   mergeHomeContent,
   type HeroSlide,
   type HomeContentConfig,
+  type SiteBrandingConfig,
   DEFAULT_SPLIT_LEFT,
   DEFAULT_SPLIT_RIGHT,
 } from '@/lib/home-content';
+import { SITE_BRAND, SITE_CONTACT } from '@/lib/site-contact';
+import Image from 'next/image';
 import { deleteStorageObjectByPublicUrl, parseSupabasePublicStorageUrl } from '@/lib/storage-upload';
 import StorageUploadField from '@/components/admin/StorageUploadField';
 import { Loader2, Plus, Trash2, Save } from 'lucide-react';
@@ -35,6 +38,15 @@ export default function AdminHomeMediaTab() {
   });
   const [splitLeft, setSplitLeft] = useState({ ...DEFAULT_SPLIT_LEFT });
   const [splitRight, setSplitRight] = useState({ ...DEFAULT_SPLIT_RIGHT });
+  const [branding, setBranding] = useState<SiteBrandingConfig>({
+    logoUrl: '',
+    companyName: SITE_BRAND.legalName,
+    tagline: SITE_BRAND.tagline,
+    contactEmail: SITE_CONTACT.email,
+    contactPhones: SITE_CONTACT.phones.join(', '),
+    contactAddress: SITE_CONTACT.address,
+    aboutText: SITE_BRAND.description,
+  });
 
   useEffect(() => {
     load();
@@ -56,6 +68,15 @@ export default function AdminHomeMediaTab() {
       });
       setSplitLeft({ ...DEFAULT_SPLIT_LEFT, ...merged.splitPanels?.left });
       setSplitRight({ ...DEFAULT_SPLIT_RIGHT, ...merged.splitPanels?.right });
+      setBranding({
+        logoUrl: merged.branding?.logoUrl || '',
+        companyName: merged.branding?.companyName || SITE_BRAND.legalName,
+        tagline: merged.branding?.tagline || SITE_BRAND.tagline,
+        contactEmail: merged.branding?.contactEmail || SITE_CONTACT.email,
+        contactPhones: merged.branding?.contactPhones || SITE_CONTACT.phones.join(', '),
+        contactAddress: merged.branding?.contactAddress || SITE_CONTACT.address,
+        aboutText: merged.branding?.aboutText || SITE_BRAND.description,
+      });
     } catch (e: any) {
       setMessage(
         e.message?.includes('site_settings')
@@ -75,6 +96,7 @@ export default function AdminHomeMediaTab() {
     });
     return {
       heroSlides,
+      branding,
       featuredPlaces: fp,
       splitPanels: {
         left: {
@@ -207,6 +229,76 @@ export default function AdminHomeMediaTab() {
       {message && (
         <div className="text-sm px-4 py-3 rounded-xl bg-blue-50 text-blue-900 border border-blue-100">{message}</div>
       )}
+
+      <section className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
+        <h4 className="font-bold text-gray-800">Branding & contact (logo live preview)</h4>
+        <div className="flex flex-col sm:flex-row gap-4 items-start">
+          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 min-w-[200px]">
+            <p className="text-[10px] font-bold uppercase text-gray-500 mb-2">Logo preview</p>
+            {branding.logoUrl ? (
+              <div className="relative h-16 w-40">
+                <Image src={branding.logoUrl} alt="Logo" fill className="object-contain object-left" unoptimized />
+              </div>
+            ) : (
+              <p className="text-sm font-bold text-teal-800">{branding.companyName || SITE_BRAND.shortName}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-2">{branding.tagline}</p>
+          </div>
+          <div className="flex-1 space-y-3 w-full">
+            <div className="flex flex-wrap gap-2">
+              <input
+                className="flex-1 min-w-[200px] border rounded-lg px-3 py-2 text-sm"
+                placeholder="Logo URL"
+                value={branding.logoUrl || ''}
+                onChange={(e) => setBranding((b) => ({ ...b, logoUrl: e.target.value }))}
+              />
+              <StorageUploadField
+                bucket="site-media"
+                folder="branding/logo"
+                accept="image/*"
+                label="Upload logo"
+                onUploaded={(url) => setBranding((b) => ({ ...b, logoUrl: url }))}
+              />
+            </div>
+            <input
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+              placeholder="Company name"
+              value={branding.companyName || ''}
+              onChange={(e) => setBranding((b) => ({ ...b, companyName: e.target.value }))}
+            />
+            <input
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+              placeholder="Tagline"
+              value={branding.tagline || ''}
+              onChange={(e) => setBranding((b) => ({ ...b, tagline: e.target.value }))}
+            />
+            <textarea
+              className="w-full border rounded-lg px-3 py-2 text-sm min-h-[60px]"
+              placeholder="About / company info"
+              value={branding.aboutText || ''}
+              onChange={(e) => setBranding((b) => ({ ...b, aboutText: e.target.value }))}
+            />
+            <input
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+              placeholder="Contact email"
+              value={branding.contactEmail || ''}
+              onChange={(e) => setBranding((b) => ({ ...b, contactEmail: e.target.value }))}
+            />
+            <input
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+              placeholder="Phone numbers (comma-separated)"
+              value={branding.contactPhones || ''}
+              onChange={(e) => setBranding((b) => ({ ...b, contactPhones: e.target.value }))}
+            />
+            <textarea
+              className="w-full border rounded-lg px-3 py-2 text-sm min-h-[50px]"
+              placeholder="Office address"
+              value={branding.contactAddress || ''}
+              onChange={(e) => setBranding((b) => ({ ...b, contactAddress: e.target.value }))}
+            />
+          </div>
+        </div>
+      </section>
 
       <section className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
         <h4 className="font-bold text-gray-800 flex items-center justify-between">

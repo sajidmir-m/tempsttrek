@@ -10,11 +10,22 @@ export type SplitPanel = {
   ctaHref?: string;
 };
 
+export type SiteBrandingConfig = {
+  logoUrl?: string;
+  companyName?: string;
+  tagline?: string;
+  contactEmail?: string;
+  contactPhones?: string;
+  contactAddress?: string;
+  aboutText?: string;
+};
+
 export type HomeContentConfig = {
   heroSlides?: HeroSlide[];
   /** Keyed by place slug e.g. srinagar, gulmarg, pahalgam */
   featuredPlaces?: Record<string, { image?: string; name?: string; description?: string; tag?: string }>;
   splitPanels?: { left?: SplitPanel; right?: SplitPanel };
+  branding?: SiteBrandingConfig;
 };
 
 export const DEFAULT_HERO_SLIDES: HeroSlide[] = [
@@ -58,6 +69,7 @@ export function mergeHomeContent(overrides: HomeContentConfig | null | undefined
       left: { ...DEFAULT_SPLIT_LEFT, ...o.splitPanels?.left },
       right: { ...DEFAULT_SPLIT_RIGHT, ...o.splitPanels?.right },
     },
+    branding: o.branding || {},
   };
 }
 

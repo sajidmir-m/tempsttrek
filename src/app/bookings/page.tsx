@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { getSafeSession } from '@/lib/supabase-auth';
 import type { Session } from '@supabase/supabase-js';
 import { useToast } from '@/components/ui/Toast';
 import { PackageCardSkeleton } from '@/components/ui/LoadingSkeleton';
@@ -22,7 +23,7 @@ export default function CustomerPortal() {
 
   useEffect(() => {
     // Check for session
-    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+    void getSafeSession().then(({ session }) => {
       setSession(session);
       if (session) {
         fetchBookings(session.user.email || '');

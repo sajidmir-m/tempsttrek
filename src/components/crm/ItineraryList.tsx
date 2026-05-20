@@ -63,7 +63,7 @@ export default function ItineraryList() {
   }, [rows, query]);
 
   return (
-    <div className="min-w-0 space-y-6">
+    <div className="crm-surface min-w-0 space-y-6">
       <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-700">CRM</p>
