@@ -81,7 +81,7 @@ export function generateInquiryEmail(inquiry: any, packageDetails?: any) {
               
               <p>${inquiry.message ? `<strong>Your Message:</strong><br>${inquiry.message}` : ''}</p>
               
-              <p>In the meantime, feel free to explore our <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tempesttrek.example'}/packages">tour packages</a> or contact us directly:</p>
+              <p>In the meantime, feel free to explore our <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tempesttreks.in'}/packages">tour packages</a> or contact us directly:</p>
               <p>📞 Call (Priority): +91 7006796123<br>💬 Our WhatsApp: +91 7006796123<br>📧 info@tempesttreks.in</p>
             </div>
             <div class="footer">

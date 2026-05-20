@@ -1,8 +1,9 @@
 import { SOCIAL_LINKS } from '@/lib/social-links';
 import { SITE_BRAND } from '@/lib/site-contact';
+import { getSiteUrl } from '@/lib/site-url';
 
 export default function StructuredData() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tempesttrek.example';
+  const baseUrl = getSiteUrl();
 
   const organizationSchema = {
     '@context': 'https://schema.org',

@@ -133,10 +133,10 @@ export default function Navbar() {
                   priority
                 />
               </div>
-              <div className="hidden min-w-0 flex-col sm:flex">
+              <div className="flex min-w-0 flex-col">
                 <span
                   className={cn(
-                    'truncate text-base font-bold tracking-tight transition-colors sm:text-lg',
+                    'truncate text-sm font-bold tracking-tight transition-colors sm:text-base md:text-lg',
                     isScrolled ? 'text-slate-900' : 'text-white'
                   )}
                 >
@@ -144,7 +144,7 @@ export default function Navbar() {
                 </span>
                 <span
                   className={cn(
-                    'truncate text-[10px] font-medium uppercase tracking-[0.2em] transition-colors',
+                    'truncate text-[9px] font-medium uppercase tracking-[0.15em] transition-colors sm:text-[10px] sm:tracking-[0.2em]',
                     isScrolled ? 'text-emerald-700' : 'text-emerald-200/90'
                   )}
                 >

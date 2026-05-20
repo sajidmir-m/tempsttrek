@@ -7,6 +7,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import StructuredData from "./structured-data";
 import { SITE_BRAND } from "@/lib/site-contact";
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   authors: [{ name: SITE_BRAND.legalName }],
   creator: SITE_BRAND.legalName,
   publisher: SITE_BRAND.legalName,
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.tempesttrek.example"),
+  metadataBase: new URL(getSiteUrl()),
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.tempesttrek.example",
+    url: getSiteUrl(),
     siteName: SITE_BRAND.shortName,
     title: `${SITE_BRAND.shortName} - Kashmir | Tour Packages & Off-Beat Travel`,
     description: SITE_BRAND.description,

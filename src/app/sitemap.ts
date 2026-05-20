@@ -1,85 +1,99 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
+import { PLACES } from '@/data/places';
+import { offbeatSpotPath } from '@/lib/offbeat-slug';
+import { getSiteUrl } from '@/lib/site-url';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Use environment variable in production; fall back to the correct .in domain
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tempesttrek.example';
+export const revalidate = 3600;
 
-  // Fetch all packages for dynamic routes
-  let packages: any[] = [];
-  try {
-    const { data } = await supabase
-      .from('packages')
-      .select('slug, updated_at');
-    if (data) packages = data;
-  } catch (error) {
-    console.error('Error fetching packages for sitemap:', error);
+type SitemapEntry = MetadataRoute.Sitemap[number];
+
+function entry(
+  path: string,
+  opts: {
+    changeFrequency: SitemapEntry['changeFrequency'];
+    priority: number;
+    lastModified?: Date | string;
   }
-
-  const staticRoutes = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/packages`,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/offbeat`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/social`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/places`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/cabs`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/terms`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly' as const,
-      priority: 0.5,
-    },
-  ];
-
-  const packageRoutes = packages.map((pkg) => ({
-    url: `${baseUrl}/packages/${pkg.slug}`,
-    lastModified: pkg.updated_at ? new Date(pkg.updated_at) : new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }));
-
-  return [...staticRoutes, ...packageRoutes];
+): SitemapEntry {
+  const baseUrl = getSiteUrl();
+  const loc = path === '/' ? baseUrl : `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+  return {
+    url: loc,
+    lastModified: opts.lastModified ? new Date(opts.lastModified) : new Date(),
+    changeFrequency: opts.changeFrequency,
+    priority: opts.priority,
+  };
 }
 
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticPages: Array<{
+    path: string;
+    changeFrequency: SitemapEntry['changeFrequency'];
+    priority: number;
+  }> = [
+    { path: '/', changeFrequency: 'daily', priority: 1 },
+    { path: '/packages', changeFrequency: 'daily', priority: 0.9 },
+    { path: '/places', changeFrequency: 'weekly', priority: 0.85 },
+    { path: '/offbeat', changeFrequency: 'weekly', priority: 0.85 },
+    { path: '/cabs', changeFrequency: 'weekly', priority: 0.8 },
+    { path: '/car-rental', changeFrequency: 'weekly', priority: 0.8 },
+    { path: '/about', changeFrequency: 'monthly', priority: 0.7 },
+    { path: '/contact', changeFrequency: 'monthly', priority: 0.75 },
+    { path: '/social', changeFrequency: 'monthly', priority: 0.65 },
+    { path: '/privacy', changeFrequency: 'yearly', priority: 0.4 },
+    { path: '/terms', changeFrequency: 'yearly', priority: 0.4 },
+    { path: '/refund-policy', changeFrequency: 'yearly', priority: 0.4 },
+  ];
+
+  const staticRoutes = staticPages.map((p) =>
+    entry(p.path, { changeFrequency: p.changeFrequency, priority: p.priority })
+  );
+
+  const placeRoutes = PLACES.map((place) =>
+    entry(`/places/${place.slug}`, {
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    })
+  );
+
+  let packageRoutes: SitemapEntry[] = [];
+  try {
+    const { data } = await supabase.from('packages').select('slug, updated_at');
+    if (data?.length) {
+      packageRoutes = data.map((pkg) =>
+        entry(`/packages/${pkg.slug}`, {
+          changeFrequency: 'weekly',
+          priority: 0.8,
+          lastModified: pkg.updated_at ?? undefined,
+        })
+      );
+    }
+  } catch (e) {
+    console.error('[sitemap] packages:', e);
+  }
+
+  let offbeatRoutes: SitemapEntry[] = [];
+  try {
+    const { data } = await supabase.from('offbeat_spots').select('slug, name, updated_at');
+    if (data?.length) {
+      const seen = new Set<string>();
+      offbeatRoutes = data
+        .map((spot) => {
+          const path = offbeatSpotPath(spot);
+          if (seen.has(path)) return null;
+          seen.add(path);
+          return entry(path, {
+            changeFrequency: 'weekly',
+            priority: 0.75,
+            lastModified: spot.updated_at ?? undefined,
+          });
+        })
+        .filter((r): r is SitemapEntry => r != null);
+    }
+  } catch (e) {
+    console.error('[sitemap] offbeat_spots:', e);
+  }
+
+  return [...staticRoutes, ...placeRoutes, ...packageRoutes, ...offbeatRoutes];
+}

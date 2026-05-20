@@ -2,10 +2,11 @@ import { Metadata } from 'next';
 import { supabase } from '@/lib/supabase';
 import { MOCK_PACKAGES } from '@/data/packages';
 import { formatInr } from '@/lib/format-currency';
+import { getSiteUrl } from '@/lib/site-url';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tempesttrek.example';
+  const baseUrl = getSiteUrl();
 
   let pkg: any = null;
 

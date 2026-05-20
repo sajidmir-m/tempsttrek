@@ -1,18 +1,27 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
+import { getSiteUrl } from '@/lib/site-url';
 
 export default function robots(): MetadataRoute.Robots {
-  // Use environment variable in production; fall back to the correct .in domain
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tempesttrek.example';
-  
+  const siteUrl = getSiteUrl();
+
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/api/'],
+        disallow: [
+          '/admin',
+          '/admin/',
+          '/api/',
+          '/crm/',
+          '/intelligence',
+          '/staff',
+          '/bookings',
+          '/booking-confirmation/',
+        ],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   };
 }
-
