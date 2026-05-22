@@ -23,6 +23,7 @@ export type InvoiceRow = {
   customer_name: string;
   customer_email: string | null;
   amount: number;
+  advance_paid?: number;
   status: string;
   issue_date: string;
   notes: string | null;
@@ -38,6 +39,7 @@ const emptyForm = {
   customer_name: '',
   customer_email: '',
   amount: '',
+  advance_paid: '',
   status: 'draft' as (typeof statuses)[number],
   issue_date: new Date().toISOString().slice(0, 10),
   notes: '',
@@ -63,7 +65,7 @@ export default function CrmInvoicesManager() {
     try {
       const { data, error } = await supabase
         .from('crm_invoices')
-        .select('id,invoice_number,customer_name,customer_email,amount,status,issue_date,notes,ledger_id,synced_to_ledger_at,created_at')
+        .select('id,invoice_number,customer_name,customer_email,amount,advance_paid,status,issue_date,notes,ledger_id,synced_to_ledger_at,created_at')
         .order('issue_date', { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -109,6 +111,7 @@ export default function CrmInvoicesManager() {
       customer_name: row.customer_name,
       customer_email: row.customer_email || '',
       amount: String(row.amount),
+      advance_paid: row.advance_paid != null ? String(row.advance_paid) : '',
       status: row.status as (typeof statuses)[number],
       issue_date: row.issue_date,
       notes: row.notes || '',
@@ -125,8 +128,13 @@ export default function CrmInvoicesManager() {
       return;
     }
     const amount = Number.parseFloat(form.amount);
+    const advance_paid = Number.parseFloat(form.advance_paid || '0');
     if (!Number.isFinite(amount)) {
       showToast('Enter a valid amount', 'error');
+      return;
+    }
+    if (!Number.isFinite(advance_paid) || advance_paid < 0) {
+      showToast('Enter a valid advance paid amount', 'error');
       return;
     }
     const payload = {
@@ -134,6 +142,7 @@ export default function CrmInvoicesManager() {
       customer_name: customer,
       customer_email: form.customer_email.trim() || null,
       amount,
+      advance_paid,
       status: form.status,
       issue_date: form.issue_date,
       notes: form.notes.trim() || null,
@@ -281,7 +290,8 @@ export default function CrmInvoicesManager() {
           <CrmInput label="Customer name" value={form.customer_name} onChange={(e) => setForm((f) => ({ ...f, customer_name: e.target.value }))} />
           <CrmInput label="Customer email" type="email" value={form.customer_email} onChange={(e) => setForm((f) => ({ ...f, customer_email: e.target.value }))} />
           <div className="grid gap-3 sm:grid-cols-2">
-            <CrmInput label="Amount (₹)" type="number" step="0.01" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} />
+            <CrmInput label="Total amount (₹)" type="number" step="0.01" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} />
+            <CrmInput label="Advance paid (₹)" type="number" step="0.01" value={form.advance_paid} onChange={(e) => setForm((f) => ({ ...f, advance_paid: e.target.value }))} />
             <CrmInput label="Issue date" type="date" value={form.issue_date} onChange={(e) => setForm((f) => ({ ...f, issue_date: e.target.value }))} />
           </div>
           <CrmSelect label="Status" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as (typeof statuses)[number] }))}>

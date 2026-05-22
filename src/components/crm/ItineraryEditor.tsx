@@ -6,7 +6,15 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Plus, Save, Trash2, Loader2, UploadCloud, FileText } from 'lucide-react';
 import type { CRMItineraryAssetKind, CRMItineraryAssetRow, CRMItineraryRow, ItineraryDay, ItinerarySections } from './types';
-import CrmItineraryHotelsPicker from './itinerary/CrmItineraryHotelsPicker';
+import ItineraryNightHotelsPanel from './itinerary/ItineraryNightHotelsPanel';
+import DestinationTypeahead from './itinerary/DestinationTypeahead';
+import DestinationDayCards from './itinerary/DestinationDayCards';
+import DayHotelPicker, { type CatalogHotel } from './itinerary/DayHotelPicker';
+import { normalizeItinerarySections, buildNightStaysForRange, buildHotelNotesFromNightStays } from '@/lib/itinerary-utils';
+import type { ItineraryNightStay } from './types';
+import { syncItineraryHotelsFromNightStays } from '@/lib/itinerary-hotel-sync';
+import { DEFAULT_ITINERARY_POLICIES } from '@/lib/itinerary-policies';
+import { todayYmd, validateTravelRange } from '@/lib/crm-date-rules';
 
 function isMissingCrmItineraryAssetsTable(err: unknown): boolean {
   const msg =
@@ -23,29 +31,16 @@ function isMissingCrmItineraryAssetsTable(err: unknown): boolean {
 
 const defaultSections = (): ItinerarySections => ({
   days: [
-    { day: 1, title: 'Arrival & Srinagar', body: '' },
-    { day: 2, title: 'Local sightseeing', body: '' },
+    { day: 1, title: 'Arrival & Srinagar', body: '', destination_ids: [] },
+    { day: 2, title: 'Local sightseeing', body: '', destination_ids: [] },
   ],
+  night_stays: [],
   inclusions: ['Hotel stay', 'Private cab'],
   exclusions: [],
   transfers: '',
   hotel_notes: '',
+  ...DEFAULT_ITINERARY_POLICIES,
 });
-
-function normalizeSections(raw: CRMItineraryRow['sections']): ItinerarySections {
-  const s = (raw || {}) as Partial<ItinerarySections>;
-  const days = Array.isArray(s.days) ? (s.days as ItineraryDay[]) : [];
-  return {
-    days:
-      days.length > 0
-        ? days.map((d, idx) => ({ day: idx + 1, title: d?.title || `Day ${idx + 1}`, body: d?.body || '' }))
-        : defaultSections().days,
-    inclusions: Array.isArray(s.inclusions) ? (s.inclusions as string[]).filter(Boolean) : [],
-    exclusions: Array.isArray(s.exclusions) ? (s.exclusions as string[]).filter(Boolean) : [],
-    transfers: typeof s.transfers === 'string' ? s.transfers : '',
-    hotel_notes: typeof s.hotel_notes === 'string' ? s.hotel_notes : '',
-  };
-}
 
 const KIND_OPTIONS: { value: CRMItineraryAssetKind; label: string }[] = [
   { value: 'general', label: 'General' },
@@ -148,8 +143,26 @@ export default function ItineraryEditor({
   const [assetsTableMissing, setAssetsTableMissing] = useState(false);
   const [newInc, setNewInc] = useState('');
   const [newExc, setNewExc] = useState('');
+  const [catalogHotels, setCatalogHotels] = useState<CatalogHotel[]>([]);
+  const [roomCategories, setRoomCategories] = useState<{ id: string; name: string }[]>([]);
 
-  const sections = useMemo(() => normalizeSections(row.sections as any), [row.sections]);
+  const sections = useMemo(() => normalizeItinerarySections(row.sections as ItinerarySections), [row.sections]);
+
+  const travelStart = (row.travel_start as string) || null;
+  const travelEnd = (row.travel_end as string) || null;
+  const minDate = todayYmd();
+
+  useEffect(() => {
+    if (!travelStart || !travelEnd) return;
+    setRow((p) => {
+      const sec = normalizeItinerarySections(p.sections as ItinerarySections);
+      const built = buildNightStaysForRange(travelStart, travelEnd, sec.night_stays);
+      if (built.length === sec.night_stays.length && built.every((b, i) => b.night === sec.night_stays[i]?.night)) {
+        return p;
+      }
+      return { ...p, sections: { ...sec, night_stays: built } };
+    });
+  }, [travelStart, travelEnd]);
 
   const load = async () => {
     setLoading(true);
@@ -195,6 +208,32 @@ export default function ItineraryEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itineraryId]);
 
+  useEffect(() => {
+    void Promise.all([
+      supabase
+        .from('crm_hotels')
+        .select('id,name,location,hotel_type,featured_image_url')
+        .eq('is_active', true)
+        .order('name'),
+      supabase.from('crm_room_categories').select('id,name').eq('status', 'active').order('sort_order'),
+    ]).then(([hRes, rRes]) => {
+      setCatalogHotels((hRes.data || []) as CatalogHotel[]);
+      setRoomCategories((rRes.data || []) as { id: string; name: string }[]);
+    });
+  }, []);
+
+  const patchNightStay = (night: number, patch: Partial<ItineraryNightStay>) => {
+    const next = sections.night_stays.map((s) => (s.night === night ? { ...s, ...patch } : s));
+    const hotelMap = new Map(
+      catalogHotels.map((h) => [h.id, { name: h.name, location: h.location, category: null }])
+    );
+    const hotel_notes = buildHotelNotesFromNightStays(next, hotelMap);
+    setRow((p) => ({
+      ...p,
+      sections: { ...sections, night_stays: next, hotel_notes },
+    }));
+  };
+
   const addDay = () => {
     const next = [...sections.days, { day: sections.days.length + 1, title: `Day ${sections.days.length + 1}`, body: '' }];
     setRow((p) => ({ ...p, sections: { ...sections, days: next } }));
@@ -225,6 +264,14 @@ export default function ItineraryEditor({
 
   const save = async () => {
     if (!row.title?.trim()) return alert('Title is required');
+    const rangeCheck = validateTravelRange(travelStart, travelEnd);
+    if (!rangeCheck.ok) return alert(rangeCheck.message);
+
+    const finalSections = normalizeItinerarySections({
+      ...sections,
+      night_stays: buildNightStaysForRange(travelStart, travelEnd, sections.night_stays),
+    });
+
     setSaving(true);
     try {
       const {
@@ -236,15 +283,18 @@ export default function ItineraryEditor({
         customer_name: row.customer_name || null,
         customer_email: row.customer_email || null,
         customer_phone: row.customer_phone || null,
-        travel_start: row.travel_start || null,
-        travel_end: row.travel_end || null,
+        travel_start: travelStart,
+        travel_end: travelEnd,
         status: row.status || 'draft',
         internal_notes: row.internal_notes || null,
         itinerary_body: row.itinerary_body || '',
-        sections: sections,
+        sections: finalSections,
         cover_image_url: row.cover_image_url || null,
+        quote_price: (row as { quote_price?: number | null }).quote_price ?? null,
         ...(itineraryId ? {} : { created_by: session?.user?.id ?? null }),
       };
+
+      let savedId = itineraryId;
 
       if (itineraryId) {
         const { error } = await supabase.from('crm_itineraries').update(payload).eq('id', itineraryId);
@@ -252,8 +302,13 @@ export default function ItineraryEditor({
       } else {
         const { data, error } = await supabase.from('crm_itineraries').insert(payload).select('id').maybeSingle();
         if (error) throw error;
-        const newId = (data as any)?.id as string | undefined;
-        if (newId) window.history.replaceState({}, '', `/crm/itineraries?edit=${newId}`);
+        savedId = (data as { id?: string })?.id;
+        if (savedId) window.history.replaceState({}, '', `/crm/itineraries?edit=${savedId}`);
+      }
+
+      if (savedId) {
+        const sync = await syncItineraryHotelsFromNightStays(savedId, finalSections.night_stays);
+        if (!sync.ok) alert('Itinerary saved but hotel links failed: ' + sync.error);
       }
 
       onDone();
@@ -262,6 +317,62 @@ export default function ItineraryEditor({
     } finally {
       setSaving(false);
     }
+  };
+
+  const attachDestinationToDay = async (
+    dest: {
+      id: string;
+      name: string;
+      description: string | null;
+      base_location: string;
+      featured_image_url: string | null;
+      route_from: string | null;
+      route_to: string | null;
+    },
+    dayIdx: number
+  ) => {
+    const d = sections.days[dayIdx];
+    if (!d) return;
+    const route =
+      dest.route_from && dest.route_to ? `${dest.route_from} → ${dest.route_to}` : dest.base_location;
+    const detail = dest.description?.trim() ? `\n  ${dest.description.trim()}` : '';
+    const line = `• ${dest.name} (${route})${detail}`;
+    const ids = [...(d.destination_ids || [])];
+    if (!ids.includes(dest.id)) ids.push(dest.id);
+    const sep = d.body.trim() ? '\n\n' : '';
+    updateDay(dayIdx, { body: `${d.body}${sep}${line}`, destination_ids: ids });
+
+    if (!itineraryId || assetsTableMissing) return;
+    const dayNum = d.day;
+    const urls: string[] = [];
+    if (dest.featured_image_url) urls.push(dest.featured_image_url);
+    const { data: gallery } = await supabase
+      .from('crm_destination_images')
+      .select('image_url,sort_order')
+      .eq('destination_id', dest.id)
+      .order('sort_order')
+      .limit(3);
+    for (const g of gallery || []) {
+      const u = String((g as { image_url: string }).image_url);
+      if (u && !urls.includes(u)) urls.push(u);
+    }
+    const existingUrls = new Set(assets.filter((a) => Number(a.after_day) === dayNum).map((a) => a.image_url));
+    let order = assets.filter((a) => Number(a.after_day) === dayNum).reduce((m, a) => Math.max(m, a.sort_order), 0);
+    for (const url of urls) {
+      if (existingUrls.has(url)) continue;
+      order += 10;
+      const { error } = await supabase.from('crm_itinerary_assets').insert({
+        itinerary_id: itineraryId,
+        image_url: url,
+        caption: dest.name,
+        sort_order: order,
+        after_day: dayNum,
+        kind: 'place',
+      });
+      if (error) break;
+      existingUrls.add(url);
+    }
+    await load();
   };
 
   const del = async () => {
@@ -352,14 +463,24 @@ export default function ItineraryEditor({
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           {itineraryId && (
-            <Link
-              href={`/crm/itineraries/${itineraryId}/print?download=1`}
-              target="_blank"
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 hover:bg-gray-50 px-4 py-2.5 text-sm font-semibold"
-            >
-              <FileText size={16} />
-              Generate PDF
-            </Link>
+            <>
+              <Link
+                href={`/crm/itineraries/${itineraryId}/print?download=1`}
+                target="_blank"
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 hover:bg-gray-50 px-4 py-2.5 text-sm font-semibold"
+              >
+                <FileText size={16} />
+                Itinerary PDF
+              </Link>
+              <Link
+                href={`/crm/itineraries/${itineraryId}/voucher`}
+                target="_blank"
+                className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 px-4 py-2.5 text-sm font-semibold text-amber-950"
+              >
+                <FileText size={16} />
+                Booking voucher
+              </Link>
+            </>
           )}
           {canDelete && itineraryId && (
             <button
@@ -432,15 +553,26 @@ export default function ItineraryEditor({
           />
           <input
             type="date"
+            min={minDate}
             className="border rounded-xl px-4 py-3 text-sm"
             value={(row.travel_start as string) || ''}
             onChange={(e) => setRow((p) => ({ ...p, travel_start: e.target.value || null }))}
           />
           <input
             type="date"
+            min={minDate}
             className="border rounded-xl px-4 py-3 text-sm"
             value={(row.travel_end as string) || ''}
             onChange={(e) => setRow((p) => ({ ...p, travel_end: e.target.value || null }))}
+          />
+          <input
+            type="number"
+            className="border rounded-xl px-4 py-3 text-sm"
+            placeholder="Quote price (₹)"
+            value={(row as { quote_price?: number | null }).quote_price ?? ''}
+            onChange={(e) =>
+              setRow((p) => ({ ...p, quote_price: e.target.value ? Number(e.target.value) : null }))
+            }
           />
         </div>
 
@@ -530,6 +662,23 @@ export default function ItineraryEditor({
                     value={d.body}
                     onChange={(e) => updateDay(idx, { body: e.target.value })}
                     placeholder="Write details, timings, sightseeing, stay, etc."
+                  />
+                  <DestinationTypeahead
+                    dayTitle={d.title}
+                    dayBody={d.body}
+                    destinationIds={d.destination_ids || []}
+                    onSelectDestination={(dest) => void attachDestinationToDay(dest, idx)}
+                  />
+                  {(d.destination_ids?.length ?? 0) > 0 ? (
+                    <DestinationDayCards destinationIds={d.destination_ids || []} />
+                  ) : null}
+                  <DayHotelPicker
+                    dayNumber={d.day}
+                    nightStays={sections.night_stays || []}
+                    hotels={catalogHotels}
+                    roomCategories={roomCategories}
+                    travelDatesSet={Boolean(travelStart && travelEnd)}
+                    onPatchNight={patchNightStay}
                   />
 
                   <div className="mt-4 pt-3 border-t border-gray-100">
@@ -666,11 +815,113 @@ export default function ItineraryEditor({
           </div>
         </div>
 
-        <CrmItineraryHotelsPicker
-          itineraryId={itineraryId}
-          sections={sections}
-          onSectionsChange={(next) => setRow((p) => ({ ...p, sections: next }))}
-        />
+        <details className="rounded-2xl border border-emerald-100 bg-emerald-50/30">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-bold text-emerald-950">
+            All nights overview (bulk edit)
+          </summary>
+          <div className="px-2 pb-2">
+            <ItineraryNightHotelsPanel
+              travelStart={travelStart}
+              travelEnd={travelEnd}
+              sections={sections}
+              onSectionsChange={(next) => setRow((p) => ({ ...p, sections: next }))}
+            />
+          </div>
+        </details>
+
+        <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
+          <h3 className="mb-3 font-extrabold text-gray-900">Package summary</h3>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <input
+              type="number"
+              min={0}
+              placeholder="Pax"
+              className="border rounded-xl px-3 py-2 text-sm"
+              value={sections.package_summary?.pax ?? ''}
+              onChange={(e) =>
+                setRow((p) => ({
+                  ...p,
+                  sections: {
+                    ...sections,
+                    package_summary: { ...sections.package_summary, pax: Number(e.target.value) || undefined },
+                  },
+                }))
+              }
+            />
+            <input
+              type="number"
+              min={0}
+              placeholder="Adults"
+              className="border rounded-xl px-3 py-2 text-sm"
+              value={sections.package_summary?.adults ?? ''}
+              onChange={(e) =>
+                setRow((p) => ({
+                  ...p,
+                  sections: {
+                    ...sections,
+                    package_summary: { ...sections.package_summary, adults: Number(e.target.value) || undefined },
+                  },
+                }))
+              }
+            />
+            <input
+              type="number"
+              min={0}
+              placeholder="Rooms"
+              className="border rounded-xl px-3 py-2 text-sm"
+              value={sections.package_summary?.rooms ?? ''}
+              onChange={(e) =>
+                setRow((p) => ({
+                  ...p,
+                  sections: {
+                    ...sections,
+                    package_summary: { ...sections.package_summary, rooms: Number(e.target.value) || undefined },
+                  },
+                }))
+              }
+            />
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <input
+                type="checkbox"
+                checked={Boolean(sections.package_summary?.flights_included)}
+                onChange={(e) =>
+                  setRow((p) => ({
+                    ...p,
+                    sections: {
+                      ...sections,
+                      package_summary: { ...sections.package_summary, flights_included: e.target.checked },
+                    },
+                  }))
+                }
+              />
+              Flights included
+            </label>
+          </div>
+        </div>
+
+        {itineraryId ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4 sm:p-5">
+            <h3 className="font-extrabold text-gray-900">Booking confirmation voucher</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Create and edit vouchers in Manage Voucher — linked to this itinerary with the same stays, cab, and payment fields.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                href={`/crm/manage-voucher?itinerary=${itineraryId}`}
+                className="inline-flex items-center rounded-xl bg-amber-800 px-4 py-2 text-sm font-bold text-white hover:bg-amber-900"
+              >
+                Open Manage Voucher
+              </Link>
+              <Link
+                href={`/crm/itineraries/${itineraryId}/print`}
+                target="_blank"
+                className="inline-flex items-center rounded-xl border border-amber-300 bg-white px-4 py-2 text-sm font-bold text-amber-900"
+              >
+                Itinerary PDF
+              </Link>
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="min-w-0 rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
@@ -682,15 +933,46 @@ export default function ItineraryEditor({
               placeholder="Airport pickup, local transfers, intercity etc."
             />
           </div>
-          <div className="min-w-0 rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
-            <h3 className="mb-3 font-extrabold text-gray-900">Hotel notes</h3>
-            <textarea
-              className="w-full border rounded-xl px-3 py-2 text-sm min-h-[100px]"
-              value={sections.hotel_notes}
-              onChange={(e) => setRow((p) => ({ ...p, sections: { ...sections, hotel_notes: e.target.value } }))}
-              placeholder="Hotel category, meal plan, check-in/out, etc."
-            />
+          <div className="min-w-0 rounded-2xl border border-gray-100 bg-slate-50 p-4 sm:p-5">
+            <h3 className="mb-2 font-extrabold text-gray-900">Hotel summary (auto)</h3>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">{sections.hotel_notes || 'Assign hotels per night above.'}</p>
           </div>
+        </div>
+
+        <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-extrabold text-gray-900">Policies &amp; information (PDF)</h3>
+            <button
+              type="button"
+              className="text-xs font-bold text-teal-800 hover:text-teal-950 underline"
+              onClick={() =>
+                setRow((p) => ({
+                  ...p,
+                  sections: { ...sections, ...DEFAULT_ITINERARY_POLICIES },
+                }))
+              }
+            >
+              Reset to professional template
+            </button>
+          </div>
+          <p className="text-xs text-gray-600 -mt-2">Shown on the last pages of the itinerary PDF — disclaimer, terms, cancellation, and how to reach.</p>
+          {(
+            [
+              ['disclaimer', 'Disclaimer'],
+              ['terms_conditions', 'Terms & conditions'],
+              ['cancellation_policy', 'Cancellation policy'],
+              ['how_to_reach', 'How to reach'],
+            ] as const
+          ).map(([key, label]) => (
+            <div key={key}>
+              <label className="text-xs font-bold uppercase text-gray-500">{label}</label>
+              <textarea
+                className="mt-1 w-full border rounded-xl px-3 py-2 text-sm min-h-[80px] bg-white"
+                value={(sections[key] as string) || ''}
+                onChange={(e) => setRow((p) => ({ ...p, sections: { ...sections, [key]: e.target.value } }))}
+              />
+            </div>
+          ))}
         </div>
 
         <p className="text-xs text-gray-500 px-1">

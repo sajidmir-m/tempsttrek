@@ -17,6 +17,9 @@ export const SITE_CONTACT = {
   email: 'info@tempesttreks.in',
   address: 'Illahi Bagh Soura Near Grid Station, Jammu and Kashmir — 190020',
   officeHours: 'Mon–Fri: 10 AM – 5 PM',
+  /** Tempest Treks on Google Maps (override with NEXT_PUBLIC_GOOGLE_MAPS_URL). */
+  googleMapsUrl:
+    'https://www.google.com/maps?ftid=0x38e185e02b7c881f:0x1eae4f37bceb54a7&hl=en&gl=in&q=tempest+treks',
 } as const;
 
 export function telHref(num: string) {

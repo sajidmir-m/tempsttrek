@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { crmActorFields } from '@/lib/crm-auth';
 import { useToast } from '@/components/ui/Toast';
 import { HOTEL_AVAILABILITY, HOTEL_AVAILABILITY_LABELS } from '@/lib/crm-leads';
+import { HOTEL_TYPES, HOTEL_TYPE_LABELS } from '@/lib/crm-catalog';
 import { downloadElementAsPdf } from '@/lib/crm-pdf-download';
 import { uploadToBucket, deleteStorageObjectByPublicUrl } from '@/lib/storage-upload';
 import StorageUploadField from '@/components/admin/StorageUploadField';
@@ -41,13 +42,17 @@ export type HotelRow = {
   notes: string | null;
   is_active: boolean;
   sort_order: number;
+  hotel_category_id: string | null;
+  hotel_type: string;
+  star_rating: number | null;
+  address: string | null;
   created_at: string;
 };
 
 type HotelImage = { id: string; image_url: string; caption: string | null; sort_order: number };
 
 const HOTEL_SELECT =
-  'id,name,region,location,category,meal_plan,price_per_night,amenities,room_details,description,availability_status,featured_image_url,contact_name,contact_phone,gstin,notes,is_active,sort_order,created_at';
+  'id,name,region,location,category,meal_plan,price_per_night,amenities,room_details,description,availability_status,featured_image_url,contact_name,contact_phone,gstin,notes,is_active,sort_order,hotel_category_id,hotel_type,star_rating,address,created_at';
 
 const emptyForm = {
   name: '',
@@ -67,6 +72,10 @@ const emptyForm = {
   notes: '',
   is_active: true,
   sort_order: '0',
+  hotel_category_id: '',
+  hotel_type: 'hotel',
+  star_rating: '',
+  address: '',
 };
 
 const PAGE_SIZE = 12;
@@ -86,7 +95,17 @@ export default function CrmHotelsManager() {
   const [dragId, setDragId] = useState<string | null>(null);
   const pdfRef = useRef<HTMLDivElement>(null);
   const [pdfHotel, setPdfHotel] = useState<HotelRow | null>(null);
+  const [hotelCategories, setHotelCategories] = useState<{ id: string; name: string }[]>([]);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    void supabase
+      .from('crm_hotel_categories')
+      .select('id,name')
+      .eq('status', 'active')
+      .order('sort_order')
+      .then(({ data }) => setHotelCategories((data || []) as { id: string; name: string }[]));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -162,6 +181,10 @@ export default function CrmHotelsManager() {
       notes: row.notes || '',
       is_active: row.is_active,
       sort_order: String(row.sort_order ?? 0),
+      hotel_category_id: row.hotel_category_id || '',
+      hotel_type: row.hotel_type || 'hotel',
+      star_rating: row.star_rating != null ? String(row.star_rating) : '',
+      address: row.address || '',
     });
     setModal({ mode: 'edit', row });
     await loadGallery(row.id);
@@ -197,6 +220,10 @@ export default function CrmHotelsManager() {
       notes: form.notes.trim() || null,
       is_active: form.is_active,
       sort_order: Number.isFinite(sort) ? sort : 0,
+      hotel_category_id: form.hotel_category_id || null,
+      hotel_type: form.hotel_type,
+      star_rating: form.star_rating ? Number(form.star_rating) : null,
+      address: form.address.trim() || null,
       updated_at: new Date().toISOString(),
     };
     setSaving(true);
@@ -372,8 +399,23 @@ export default function CrmHotelsManager() {
             <CrmInput label="Location" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} />
             <CrmInput label="Region" value={form.region} onChange={(e) => setForm((f) => ({ ...f, region: e.target.value }))} />
           </div>
+          <CrmInput label="Address / location" value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
           <div className="grid gap-3 sm:grid-cols-2">
-            <CrmInput label="Category" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
+            <CrmSelect label="Hotel category" value={form.hotel_category_id} onChange={(e) => setForm((f) => ({ ...f, hotel_category_id: e.target.value }))}>
+              <option value="">— Select —</option>
+              {hotelCategories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </CrmSelect>
+            <CrmSelect label="Hotel type" value={form.hotel_type} onChange={(e) => setForm((f) => ({ ...f, hotel_type: e.target.value }))}>
+              {HOTEL_TYPES.map((t) => (
+                <option key={t} value={t}>{HOTEL_TYPE_LABELS[t]}</option>
+              ))}
+            </CrmSelect>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <CrmInput label="Star rating (1–5)" type="number" min={1} max={5} value={form.star_rating} onChange={(e) => setForm((f) => ({ ...f, star_rating: e.target.value }))} />
+            <CrmInput label="Legacy category label" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
             <CrmInput label="Price per night (₹)" type="number" value={form.price_per_night} onChange={(e) => setForm((f) => ({ ...f, price_per_night: e.target.value }))} />
           </div>
           <CrmSelect label="Availability" value={form.availability_status} onChange={(e) => setForm((f) => ({ ...f, availability_status: e.target.value }))}>

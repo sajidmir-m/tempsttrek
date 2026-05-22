@@ -298,6 +298,7 @@ export default function BookNowPopup() {
                       <input
                         name="travel_date"
                         type="date"
+                        min={new Date().toISOString().slice(0, 10)}
                         value={form.travel_date}
                         onChange={onChange}
                         className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3 py-2.5 text-base outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 sm:px-4"

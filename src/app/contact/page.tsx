@@ -8,6 +8,7 @@ import { Mail, Phone, MapPin, Send, Calendar, Building2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { sendEmail, generateInquiryEmail } from '@/lib/email';
 import { SITE_CONTACT, SITE_BRAND, formatPhoneDisplay, telHref } from '@/lib/site-contact';
+import GoogleBusinessSection from '@/components/contact/GoogleBusinessSection';
 
 const initialForm = {
   name: '',
@@ -249,6 +250,7 @@ export default function ContactPage() {
                     <input
                       name="check_in"
                       type="date"
+                      min={new Date().toISOString().slice(0, 10)}
                       value={formData.check_in}
                       onChange={handleChange}
                       className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-teal-500 outline-none"
@@ -259,6 +261,7 @@ export default function ContactPage() {
                     <input
                       name="check_out"
                       type="date"
+                      min={new Date().toISOString().slice(0, 10)}
                       value={formData.check_out}
                       onChange={handleChange}
                       className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-teal-500 outline-none"
@@ -291,6 +294,8 @@ export default function ContactPage() {
             )}
           </div>
         </div>
+
+        <GoogleBusinessSection />
       </div>
     </div>
   );

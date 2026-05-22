@@ -172,12 +172,14 @@ export default function AdminItinerariesTab({ canDelete }: { canDelete: boolean 
             />
             <input
               type="date"
+              min={new Date().toISOString().slice(0, 10)}
               className="border rounded-lg px-3 py-2 text-sm"
               value={(draft.travel_start as string) || ''}
               onChange={(e) => setDraft((d) => ({ ...d!, travel_start: e.target.value || null }))}
             />
             <input
               type="date"
+              min={new Date().toISOString().slice(0, 10)}
               className="border rounded-lg px-3 py-2 text-sm"
               value={(draft.travel_end as string) || ''}
               onChange={(e) => setDraft((d) => ({ ...d!, travel_end: e.target.value || null }))}

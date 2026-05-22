@@ -6,6 +6,11 @@ import { supabase } from '@/lib/supabase';
 import PrintPdfToolbar from '@/components/crm/PrintPdfToolbar';
 import { InvoicePrintStyles } from '@/components/crm/invoice-print-styles';
 import HotelVoucherPdf from '@/components/crm/HotelVoucherPdf';
+import WintsumInvoicePdf from '@/components/crm/pdf/WintsumInvoicePdf';
+import { CrmPdfHeroHeaderStyles } from '@/components/crm/pdf/CrmPdfHeroHeader';
+import { CrmPdfDocumentStyles } from '@/components/crm/pdf/crm-pdf-document-styles';
+import { useSiteBranding } from '@/hooks/useSiteBranding';
+import { parseVoucherPayload } from '@/lib/invoice-voucher-data';
 import { downloadElementAsPdf } from '@/lib/crm-pdf-download';
 import { usePdfViewportLayout } from '@/hooks/usePdfViewportLayout';
 
@@ -15,6 +20,7 @@ type InvoiceRow = {
   customer_name: string;
   customer_email: string | null;
   amount: number;
+  advance_paid?: number;
   status: string;
   issue_date: string;
   notes: string | null;
@@ -46,6 +52,7 @@ function InvoicePrintPageInner() {
   const searchParams = useSearchParams();
   const id = typeof params?.id === 'string' ? params.id : '';
   const wantsAutoDownload = searchParams.get('download') === '1';
+  const branding = useSiteBranding();
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -67,7 +74,7 @@ function InvoicePrintPageInner() {
     try {
       const { data, error } = await supabase
         .from('crm_invoices')
-        .select('id,invoice_number,customer_name,customer_email,amount,status,issue_date,notes')
+        .select('id,invoice_number,customer_name,customer_email,amount,advance_paid,status,issue_date,notes')
         .eq('id', id)
         .maybeSingle();
       if (error || !data) {
@@ -146,7 +153,7 @@ function InvoicePrintPageInner() {
     };
   }, [layout, wantsAutoDownload, loading, notFound, inv, assetsReady, handleDownloadPdf]);
 
-  if (loading) {
+  if (loading || branding.loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-neutral-900">
         Loading hotel voucher…
@@ -163,6 +170,8 @@ function InvoicePrintPageInner() {
     );
   }
 
+  const isHotelVoucher = Boolean(parseVoucherPayload(inv.notes));
+
   return (
     <>
       <style>{`
@@ -172,7 +181,7 @@ function InvoicePrintPageInner() {
       `}</style>
 
       <PrintPdfToolbar
-        title="Hotel voucher PDF"
+        title={isHotelVoucher ? 'Hotel / booking voucher PDF' : 'Invoice PDF'}
         banner={
           pdfError ??
           (wantsAutoDownload && layout === 'narrow'
@@ -188,8 +197,28 @@ function InvoicePrintPageInner() {
         ref={pdfExportRef}
         className="invoice-pdf-root mx-auto min-h-screen w-full max-w-[210mm] overflow-visible bg-white pb-16"
       >
-        <InvoicePrintStyles />
-        <HotelVoucherPdf inv={inv} />
+        {isHotelVoucher ? (
+          <>
+            <InvoicePrintStyles />
+            <HotelVoucherPdf inv={inv} />
+          </>
+        ) : (
+          <>
+            <CrmPdfHeroHeaderStyles />
+            <CrmPdfDocumentStyles />
+            <WintsumInvoicePdf
+              branding={branding}
+              inv={{
+                invoice_number: inv.invoice_number,
+                customer_name: inv.customer_name,
+                issue_date: inv.issue_date,
+                amount: inv.amount,
+                advance_paid: Number(inv.advance_paid) || 0,
+                status: inv.status,
+              }}
+            />
+          </>
+        )}
       </div>
     </>
   );

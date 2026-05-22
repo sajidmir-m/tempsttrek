@@ -6,6 +6,8 @@ import { crmActorFields } from '@/lib/crm-auth';
 import { useToast } from '@/components/ui/Toast';
 import {
   LEDGER_CATEGORIES,
+  isValidLedgerCategory,
+  ledgerCategoryErrorMessage,
   VENDOR_LABEL_BY_CATEGORY,
   computeNetProfit,
   computeRemaining,
@@ -33,6 +35,7 @@ import CrmEntityDetailModal from '../details/CrmEntityDetailModal';
 import CrmAnimatedCounter from './CrmAnimatedCounter';
 import CrmLedgerAnalytics from './CrmLedgerAnalytics';
 import { DEMO_LEDGER_ITEMS, type TripLedgerItemRow, type TripLedgerRow } from './ledger-types';
+import { friendlyCrmError } from '@/lib/crm-supabase-errors';
 import {
   BookOpen,
   Download,
@@ -393,8 +396,13 @@ export default function CrmLedgerManager() {
     }
     if (!ledger) return;
 
+    if (!isValidLedgerCategory(itemForm.category)) {
+      showToast(ledgerCategoryErrorMessage(itemForm.category), 'error');
+      return;
+    }
+
     const payload = {
-      category: itemForm.category,
+      category: normalizeCategory(itemForm.category),
       vendor,
       total_cost,
       paid_amount,
@@ -435,7 +443,7 @@ export default function CrmLedgerManager() {
       showToast(itemModal?.mode === 'edit' ? 'Entry updated' : 'Entry added', 'success');
       setItemModal(null);
     } catch (e: unknown) {
-      showToast(e instanceof Error ? e.message : 'Save failed', 'error');
+      showToast(friendlyCrmError(e, 'Could not save ledger entry'), 'error');
     } finally {
       setSaving(false);
     }

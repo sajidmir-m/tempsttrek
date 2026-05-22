@@ -1,5 +1,6 @@
-import Image from 'next/image';
 import SectionHeading from '@/components/ui/SectionHeading';
+
+const ABOUT_OFFICE_IMAGE = '/IMG_0354.jpg';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,13 +14,11 @@ export default function AboutPage() {
   return (
     <div className="bg-white">
       <div className="relative overflow-hidden text-white min-h-[300px] md:min-h-[400px] flex flex-col items-center justify-center py-20 px-4 text-center">
-        <Image
-          src="/gem.png"
-          alt="Kashmir valley — mountains, river, and village"
-          fill
-          className="object-cover object-center scale-[1.02]"
-          sizes="100vw"
-          priority
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={ABOUT_OFFICE_IMAGE}
+          alt="Tempesttrek office and team in Kashmir"
+          className="absolute inset-0 h-full w-full object-cover object-center scale-[1.02]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/45 via-teal-900/35 to-emerald-950/80" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25" />
@@ -51,8 +50,16 @@ export default function AboutPage() {
               board your return flight, our team stays with you like a local guardian in Kashmir.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-2xl border-2 border-emerald-500/70 shadow-lg bg-gradient-to-br from-emerald-800 to-teal-900 text-white p-8 flex flex-col justify-center min-h-[220px]">
+          <div className="space-y-4">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-emerald-100 bg-gray-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={ABOUT_OFFICE_IMAGE}
+                alt="Tempesttrek — our office in Srinagar"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </div>
+            <div className="rounded-2xl border-2 border-emerald-500/70 shadow-lg bg-gradient-to-br from-emerald-800 to-teal-900 text-white p-8">
               <p className="text-xs font-semibold tracking-[0.2em] text-emerald-100 uppercase mb-2">Owner</p>
               <p className="text-3xl font-extrabold mb-3">Saqib</p>
               <p className="text-sm text-white/90 leading-relaxed">
@@ -60,20 +67,12 @@ export default function AboutPage() {
                 Kashmir.
               </p>
             </div>
-            <div className="rounded-2xl border-2 border-sky-400/50 shadow-lg bg-gradient-to-br from-sky-900 to-emerald-950 text-white p-8 flex flex-col justify-center min-h-[220px]">
-              <p className="text-xs font-semibold tracking-[0.2em] text-sky-100 uppercase mb-2">Created by</p>
-              <p className="text-2xl sm:text-3xl font-extrabold mb-1">ER Sajid Nazir</p>
-              <p className="text-sm text-white/90 leading-relaxed mt-2">
-                Built the digital side of Tempesttrek—website, systems, and the tools that keep bookings and
-                itineraries clear for every guest.
-              </p>
-            </div>
           </div>
         </div>
 
         <div className="mb-20">
           <SectionHeading title="Leadership" center={true} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 max-w-4xl mx-auto">
+          <div className="mt-10 max-w-lg mx-auto">
             <div className="border border-emerald-100 rounded-2xl p-6 shadow-sm bg-emerald-50/50">
               <h3 className="text-xl font-bold text-emerald-900 mb-1">Saqib</h3>
               <p className="text-sm font-semibold text-emerald-700 mb-3">Owner – Tempesttrek</p>
@@ -84,25 +83,6 @@ export default function AboutPage() {
               <p className="text-sm text-gray-700 mt-4">
                 <span className="font-semibold">Phone (Primary):</span>{' '}
                 <a href="tel:+917006796123" className="text-emerald-700 font-semibold">
-                  +91 7006796123
-                </a>
-              </p>
-            </div>
-            <div className="border border-sky-100 rounded-2xl p-6 shadow-sm bg-sky-50/50">
-              <h3 className="text-xl font-bold text-sky-950 mb-1">ER Sajid Nazir</h3>
-              <p className="text-sm font-semibold text-sky-800 mb-3">Created by – digital &amp; systems</p>
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">
-                Responsible for building and evolving the Tempesttrek platform so enquiries, confirmations, and
-                itineraries stay smooth and professional.
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-semibold">WhatsApp (Support):</span>{' '}
-                <a
-                  href="https://wa.me/917006796123"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sky-800 font-semibold hover:underline"
-                >
                   +91 7006796123
                 </a>
               </p>

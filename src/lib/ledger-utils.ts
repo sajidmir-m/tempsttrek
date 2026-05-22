@@ -1,43 +1,17 @@
-export const LEDGER_CATEGORIES = ['hotel', 'cab', 'office', 'other'] as const;
-export type LedgerCategory = (typeof LEDGER_CATEGORIES)[number];
+export {
+  LEDGER_CATEGORIES,
+  EXPENSE_CATEGORIES,
+  normalizeCategory,
+  isValidLedgerCategory,
+  formatCategoryLabel,
+  ledgerCategoryErrorMessage,
+  VENDOR_LABEL_BY_CATEGORY,
+  type LedgerCategory,
+} from '@/lib/crm-catalog';
 
-/** Same categories for Manage Expenses */
-export const EXPENSE_CATEGORIES = LEDGER_CATEGORIES;
+import type { LedgerCategory } from '@/lib/crm-catalog';
 
 export type PaymentStatus = 'paid' | 'partial' | 'pending';
-
-const LEGACY_CATEGORY_MAP: Record<string, LedgerCategory> = {
-  hotel: 'hotel',
-  cab: 'cab',
-  office: 'office',
-  other: 'other',
-  transport: 'cab',
-  driver: 'office',
-  misc: 'other',
-  vendor: 'hotel',
-  staff: 'office',
-  trip: 'cab',
-};
-
-export function normalizeCategory(category: string): LedgerCategory {
-  const c = category.toLowerCase().trim();
-  return LEGACY_CATEGORY_MAP[c] ?? 'other';
-}
-
-export function formatCategoryLabel(category: string): string {
-  const c = normalizeCategory(category);
-  if (c === 'hotel') return 'Hotels';
-  if (c === 'cab') return 'Cabs';
-  if (c === 'office') return 'Offices';
-  return 'Other';
-}
-
-export const VENDOR_LABEL_BY_CATEGORY: Record<LedgerCategory, string> = {
-  hotel: 'Hotel / property name',
-  cab: 'Cab / transport vendor',
-  office: 'Office expense (rent, bills, etc.)',
-  other: 'Vendor / description',
-};
 
 export function computeRemaining(totalCost: number, paidAmount: number): number {
   return Math.max(0, Number(totalCost) - Number(paidAmount));

@@ -384,8 +384,8 @@ export default function CrmLeadsTable({
           <CrmInput label="Address" value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
           <CrmInput label="Hotel requirement" value={form.hotel_requirement} onChange={(e) => setForm((f) => ({ ...f, hotel_requirement: e.target.value }))} />
           <div className="grid gap-3 sm:grid-cols-2">
-            <CrmInput label="Check-in" type="date" value={form.check_in} onChange={(e) => setForm((f) => ({ ...f, check_in: e.target.value }))} />
-            <CrmInput label="Check-out" type="date" value={form.check_out} onChange={(e) => setForm((f) => ({ ...f, check_out: e.target.value }))} />
+            <CrmInput label="Check-in" type="date" min={new Date().toISOString().slice(0, 10)} value={form.check_in} onChange={(e) => setForm((f) => ({ ...f, check_in: e.target.value }))} />
+            <CrmInput label="Check-out" type="date" min={new Date().toISOString().slice(0, 10)} value={form.check_out} onChange={(e) => setForm((f) => ({ ...f, check_out: e.target.value }))} />
           </div>
           <CrmTextarea label="Message" value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))} rows={2} />
           <div className="grid gap-3 sm:grid-cols-2">

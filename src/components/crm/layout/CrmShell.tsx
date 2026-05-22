@@ -37,10 +37,15 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
       setEmail(session.user.email || '');
       const { data } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role,is_active')
         .eq('id', session.user.id)
         .maybeSingle();
       if (cancelled) return;
+      if (data?.is_active === false) {
+        await supabase.auth.signOut();
+        if (!cancelled) router.push('/admin?deactivated=1');
+        return;
+      }
       setRole(resolvePortalRole(data?.role));
     };
 
@@ -82,7 +87,12 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
   return (
     <CrmThemeProvider>
     <div className="crm-shell flex min-h-dvh bg-slate-100/90 text-slate-900">
-      <div className="hidden lg:flex lg:shrink-0 lg:sticky lg:top-0 lg:h-dvh lg:py-0">
+      <div
+        className={cn(
+          'hidden lg:flex lg:shrink-0 lg:sticky lg:top-0 lg:h-dvh lg:py-0',
+          isPrintView && 'noPrint'
+        )}
+      >
         <CrmSidebar
           email={email}
           role={role}
@@ -93,7 +103,9 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <CrmTopBar onOpenMobileMenu={() => setMobileOpen(true)} email={email} />
+        <div className={cn(isPrintView && 'noPrint')}>
+          <CrmTopBar onOpenMobileMenu={() => setMobileOpen(true)} email={email} />
+        </div>
         <main
           className={cn(
             'crm-main mx-auto min-w-0 w-full max-w-[1600px] flex-1 px-4 sm:px-6 lg:px-8',
@@ -105,7 +117,7 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="CRM navigation">
+        <div className="noPrint fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="CRM navigation">
           <button
             type="button"
             className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"

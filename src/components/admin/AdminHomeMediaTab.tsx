@@ -46,6 +46,9 @@ export default function AdminHomeMediaTab() {
     contactPhones: SITE_CONTACT.phones.join(', '),
     contactAddress: SITE_CONTACT.address,
     aboutText: SITE_BRAND.description,
+    website: 'www.tempesttreks.in',
+    pdfHeaderImageUrl: '',
+    bankDetails: {},
   });
 
   useEffect(() => {
@@ -76,6 +79,9 @@ export default function AdminHomeMediaTab() {
         contactPhones: merged.branding?.contactPhones || SITE_CONTACT.phones.join(', '),
         contactAddress: merged.branding?.contactAddress || SITE_CONTACT.address,
         aboutText: merged.branding?.aboutText || SITE_BRAND.description,
+        website: merged.branding?.website || 'www.tempesttreks.in',
+        pdfHeaderImageUrl: merged.branding?.pdfHeaderImageUrl || '',
+        bankDetails: merged.branding?.bankDetails || {},
       });
     } catch (e: any) {
       setMessage(
@@ -296,7 +302,74 @@ export default function AdminHomeMediaTab() {
               value={branding.contactAddress || ''}
               onChange={(e) => setBranding((b) => ({ ...b, contactAddress: e.target.value }))}
             />
+            <input
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+              placeholder="Website (e.g. www.tempesttreks.in)"
+              value={branding.website || ''}
+              onChange={(e) => setBranding((b) => ({ ...b, website: e.target.value }))}
+            />
+            <div className="flex flex-wrap gap-2 items-end">
+              <input
+                className="flex-1 min-w-[200px] border rounded-lg px-3 py-2 text-sm"
+                placeholder="Itinerary PDF header image URL"
+                value={branding.pdfHeaderImageUrl || ''}
+                onChange={(e) => setBranding((b) => ({ ...b, pdfHeaderImageUrl: e.target.value }))}
+              />
+              <StorageUploadField
+                bucket="site-media"
+                folder="branding/pdf-header"
+                accept="image/*"
+                label="Upload header bg"
+                onUploaded={(url) => setBranding((b) => ({ ...b, pdfHeaderImageUrl: url }))}
+              />
+            </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-white rounded-2xl border border-gray-100 p-6 space-y-3">
+        <h4 className="font-bold text-gray-800">Bank details (itinerary PDF footer)</h4>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input
+            className="border rounded-lg px-3 py-2 text-sm"
+            placeholder="Account name"
+            value={branding.bankDetails?.accountName || ''}
+            onChange={(e) =>
+              setBranding((b) => ({ ...b, bankDetails: { ...b.bankDetails, accountName: e.target.value } }))
+            }
+          />
+          <input
+            className="border rounded-lg px-3 py-2 text-sm"
+            placeholder="Bank name"
+            value={branding.bankDetails?.bankName || ''}
+            onChange={(e) => setBranding((b) => ({ ...b, bankDetails: { ...b.bankDetails, bankName: e.target.value } }))}
+          />
+          <input
+            className="border rounded-lg px-3 py-2 text-sm"
+            placeholder="Account number"
+            value={branding.bankDetails?.accountNumber || ''}
+            onChange={(e) =>
+              setBranding((b) => ({ ...b, bankDetails: { ...b.bankDetails, accountNumber: e.target.value } }))
+            }
+          />
+          <input
+            className="border rounded-lg px-3 py-2 text-sm"
+            placeholder="IFSC"
+            value={branding.bankDetails?.ifsc || ''}
+            onChange={(e) => setBranding((b) => ({ ...b, bankDetails: { ...b.bankDetails, ifsc: e.target.value } }))}
+          />
+          <input
+            className="border rounded-lg px-3 py-2 text-sm"
+            placeholder="Branch"
+            value={branding.bankDetails?.branch || ''}
+            onChange={(e) => setBranding((b) => ({ ...b, bankDetails: { ...b.bankDetails, branch: e.target.value } }))}
+          />
+          <input
+            className="border rounded-lg px-3 py-2 text-sm"
+            placeholder="UPI ID"
+            value={branding.bankDetails?.upiId || ''}
+            onChange={(e) => setBranding((b) => ({ ...b, bankDetails: { ...b.bankDetails, upiId: e.target.value } }))}
+          />
         </div>
       </section>
 

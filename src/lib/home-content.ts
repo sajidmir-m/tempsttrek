@@ -10,6 +10,15 @@ export type SplitPanel = {
   ctaHref?: string;
 };
 
+export type BankDetailsConfig = {
+  accountName?: string;
+  bankName?: string;
+  accountNumber?: string;
+  ifsc?: string;
+  branch?: string;
+  upiId?: string;
+};
+
 export type SiteBrandingConfig = {
   logoUrl?: string;
   companyName?: string;
@@ -18,6 +27,9 @@ export type SiteBrandingConfig = {
   contactPhones?: string;
   contactAddress?: string;
   aboutText?: string;
+  website?: string;
+  bankDetails?: BankDetailsConfig;
+  pdfHeaderImageUrl?: string;
 };
 
 export type HomeContentConfig = {

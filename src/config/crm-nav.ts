@@ -16,6 +16,10 @@ import {
   UserPlus,
   ClipboardList,
   MessageSquare,
+  MapPin,
+  Tags,
+  BedDouble,
+  Car,
 } from 'lucide-react';
 
 export type CrmNavEntry = {
@@ -28,7 +32,15 @@ export type CrmNavEntry = {
 
 export const CRM_NAV: CrmNavEntry[] = [
   { id: 'dashboard', label: 'Dashboard', href: '/crm/dashboard', icon: LayoutDashboard },
-  { id: 'itineraries', label: 'Itineraries', href: '/crm/itineraries', icon: ClipboardList },
+  {
+    id: 'itineraries',
+    label: 'Itineraries',
+    icon: ClipboardList,
+    children: [
+      { id: 'itineraries-list', label: 'All itineraries', href: '/crm/itineraries', icon: ClipboardList },
+      { id: 'itineraries-dest', label: 'Manage destinations', href: '/crm/itineraries/destinations', icon: MapPin },
+    ],
+  },
   {
     id: 'assign-call',
     label: 'Assign Call',
@@ -38,7 +50,17 @@ export const CRM_NAV: CrmNavEntry[] = [
       { id: 'assign-source', label: 'Lead Source', href: '/crm/assign-call/lead-source', icon: PieChart },
     ],
   },
-  { id: 'hotel', label: 'Manage Hotel', href: '/crm/manage-hotel', icon: Hotel },
+  {
+    id: 'hotel',
+    label: 'Hotels',
+    icon: Hotel,
+    children: [
+      { id: 'hotel-list', label: 'Manage hotels', href: '/crm/manage-hotel', icon: Hotel },
+      { id: 'hotel-cat', label: 'Hotel categories', href: '/crm/manage-hotel-categories', icon: Tags },
+      { id: 'room-cat', label: 'Room categories', href: '/crm/manage-room-categories', icon: BedDouble },
+    ],
+  },
+  { id: 'cabs', label: 'Manage cabs', href: '/crm/manage-cab', icon: Car },
   { id: 'quotations', label: 'Manage Quotations', href: '/crm/manage-quotations', icon: FileText },
   { id: 'expense', label: 'Manage Expense', href: '/crm/manage-expense', icon: Wallet },
   { id: 'invoice', label: 'Manage Invoice', href: '/crm/manage-invoice', icon: Receipt },
