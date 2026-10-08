@@ -202,18 +202,43 @@ export default function ProfessionalItineraryPdf({
               uniqueDayImgs.push(img);
             }
 
+            // Deduplicate day details and titles if they are already presented in the destination card
+            const normText = (s?: string | null) => (s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+            const dayBodyNorm = normText(d?.body);
+            const attachedDestDescriptions = destIds
+              .map((did) => normText(destinationsById.get(did)?.description))
+              .filter(Boolean);
+
+            // If day body is identical to or fully contains the attached destination description,
+            // suppress the plain text body above so the destination card can present the details cleanly without repetition
+            const isBodyDuplicateOfDest =
+              attachedDestDescriptions.length > 0 &&
+              attachedDestDescriptions.some(
+                (descNorm) => descNorm && (dayBodyNorm === descNorm || dayBodyNorm.startsWith(descNorm))
+              );
+
+            const shouldShowDayBody = Boolean(d?.body?.trim()) && !isBodyDuplicateOfDest;
+
             return (
               <div key={idx} className="itin-timeline-item">
                 <div className="itin-timeline-badge">{padDay(dayNum)}</div>
                 <div className="itin-timeline-content">
                   <h3 className="itin-day-title">{d?.title?.trim() || `Day ${dayNum}`}</h3>
-                  {d?.body ? <p className="itin-day-body">{d.body}</p> : null}
+                  {shouldShowDayBody ? <p className="itin-day-body">{d.body}</p> : null}
 
                   {destIds.length > 0 ? (
                     <div className="itin-dest-list">
                       {destIds.map((did) => {
                         const dest = destinationsById.get(did);
                         if (!dest) return null;
+                        const isSingleDestWithMatchingTitle =
+                          destIds.length === 1 && normText(dest.name) === normText(d?.title);
+                        const showDestDesc =
+                          Boolean(dest.description?.trim()) &&
+                          (!shouldShowDayBody ||
+                            !normText(dest.description) ||
+                            !dayBodyNorm.includes(normText(dest.description)));
+
                         return (
                           <div key={did} className="itin-dest pdf-avoid-break">
                             {dest.featured_image_url ? (
@@ -223,14 +248,16 @@ export default function ProfessionalItineraryPdf({
                               </div>
                             ) : null}
                             <div>
-                              <p className="itin-dest-name">{dest.name}</p>
+                              {!isSingleDestWithMatchingTitle ? (
+                                <p className="itin-dest-name">{dest.name}</p>
+                              ) : null}
                               <p className="itin-dest-route">
                                 {dest.base_location}
                                 {dest.route_from && dest.route_to
                                   ? ` · ${dest.route_from} → ${dest.route_to}`
                                   : ''}
                               </p>
-                              {dest.description ? <p className="itin-dest-desc">{dest.description}</p> : null}
+                              {showDestDesc ? <p className="itin-dest-desc">{dest.description}</p> : null}
                             </div>
                           </div>
                         );
