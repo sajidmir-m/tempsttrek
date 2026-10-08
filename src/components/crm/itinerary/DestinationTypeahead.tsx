@@ -127,7 +127,7 @@ export default function DestinationTypeahead({
         </ul>
       ) : null}
       {linked.length > 0 ? (
-        <p className="text-[10px] font-bold uppercase text-teal-700">Linked destinations (shown on PDF)</p>
+        <p className="text-xs font-semibold text-teal-800">Linked destinations (shown on PDF)</p>
       ) : null}
     </div>
   );

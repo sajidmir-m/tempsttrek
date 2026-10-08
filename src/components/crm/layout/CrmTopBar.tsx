@@ -123,14 +123,14 @@ export default function CrmTopBar({
           <p className="truncate text-sm font-bold text-slate-900 dark:text-white">{title}</p>
         </div>
 
-        <div className="relative mx-auto hidden max-w-md flex-1 md:block">
+        <div className="relative ml-auto mr-2 hidden w-64 md:block">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="search"
             placeholder="Search modules…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/80 py-2 pl-10 pr-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50/80 py-1.5 pl-9 pr-3 text-xs focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
             aria-label="Search CRM navigation"
           />
           {searchResults.length > 0 && search.trim().length >= 2 && (
@@ -149,7 +149,7 @@ export default function CrmTopBar({
           )}
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={toggle}

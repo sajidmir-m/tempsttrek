@@ -57,7 +57,7 @@ export default function DestinationDayCards({
 
   return (
     <div className="mt-3 space-y-3">
-      <p className="text-[10px] font-bold uppercase tracking-wide text-teal-800">Destinations on this day</p>
+      <p className="text-xs font-semibold text-teal-900">Destinations on this day</p>
       {dests.map((d) => {
         const imgs = [
           ...(d.featured_image_url ? [d.featured_image_url] : []),

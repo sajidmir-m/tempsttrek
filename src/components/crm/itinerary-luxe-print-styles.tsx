@@ -72,9 +72,9 @@ export function ItineraryLuxePrintStyles() {
         background: #fff; border-radius: 6px; padding: 4px; flex-shrink: 0;
       }
       .itin-letterhead-brand { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: 0.02em; line-height: 1.25; color: #fff; }
-      .itin-letterhead-tag { margin: 3px 0 0; font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #f5ecd6; opacity: 0.95; }
-      .itin-letterhead-right { text-align: right; font-size: 9px; line-height: 1.55; opacity: 0.92; flex-shrink: 0; color: #fff; }
-      .itin-letterhead-right p { margin: 0 0 2px; }
+      .itin-letterhead-tag { margin: 3px 0 0; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: #f5ecd6; opacity: 0.95; }
+      .itin-letterhead-right { text-align: right; font-size: 12px; line-height: 1.5; opacity: 0.95; flex-shrink: 0; color: #fff; }
+      .itin-letterhead-right p { margin: 0 0 3px; }
       .itin-chip--rate {
         background: #0c1929 !important;
         color: #fff !important;
@@ -98,8 +98,8 @@ export function ItineraryLuxePrintStyles() {
       }
       .itin-cover-meta { margin: 10px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
       .itin-chip {
-        display: inline-block; padding: 4px 10px; font-size: 9px; font-weight: 700;
-        background: var(--itin-navy); color: #fff; border-radius: 4px; letter-spacing: 0.04em;
+        display: inline-block; padding: 5px 12px; font-size: 12px; font-weight: 700;
+        background: var(--itin-navy); color: #fff; border-radius: 6px; letter-spacing: 0.02em;
       }
       .itin-chip--gold { background: var(--itin-gold-light); color: var(--itin-navy); border: 1px solid var(--itin-gold); }
 
@@ -118,14 +118,14 @@ export function ItineraryLuxePrintStyles() {
         font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
         color: var(--itin-gold); margin-bottom: 3px;
       }
-      .itin-fact-value { font-size: 11px; font-weight: 700; color: var(--itin-ink); word-break: break-word; }
+      .itin-fact-value { font-size: 12px; font-weight: 700; color: var(--itin-ink); word-break: break-word; }
 
       /* Sections */
       .itin-section { margin-top: 22px; padding: 0 2px; }
       .itin-section-title {
         margin: 0 0 12px; padding: 0 0 8px 12px;
         border-left: 4px solid var(--itin-gold);
-        font-size: 11px; font-weight: 800; letter-spacing: 0.16em;
+        font-size: 13.5px; font-weight: 800; letter-spacing: 0.08em;
         text-transform: uppercase; color: var(--itin-navy);
       }
 
@@ -137,8 +137,8 @@ export function ItineraryLuxePrintStyles() {
         background: #fafbfc;
       }
       .itin-hotel-card-img {
-        width: 150px; min-width: 150px; height: 108px; flex-shrink: 0;
-        background: #e8eaed; overflow: hidden;
+        width: 150px; min-width: 150px; height: 100px; flex-shrink: 0;
+        background: #e8eaed; overflow: hidden; aspect-ratio: 16 / 9;
       }
       .itin-hotel-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
       .itin-hotel-card-body { padding: 12px 14px 12px 0; flex: 1; min-width: 0; }
@@ -148,13 +148,13 @@ export function ItineraryLuxePrintStyles() {
       }
       .itin-hotel-name { margin: 0; font-size: 13px; font-weight: 800; color: var(--itin-navy); }
       .itin-hotel-loc { margin: 3px 0 0; font-size: 10px; color: var(--itin-muted); }
-      .itin-hotel-meta { margin: 8px 0 0; font-size: 10px; color: var(--itin-ink); line-height: 1.45; }
-      .itin-hotel-dates { margin: 4px 0 0; font-size: 10px; font-weight: 700; color: var(--itin-navy-mid); }
+      .itin-hotel-meta { margin: 8px 0 0; font-size: 11px; color: var(--itin-ink); line-height: 1.45; }
+      .itin-hotel-dates { margin: 4px 0 0; font-size: 11px; font-weight: 700; color: var(--itin-navy-mid); }
 
       /* Highlight gallery */
       .itin-gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-      .itin-gallery-item { border-radius: 8px; overflow: hidden; border: 1px solid var(--itin-line); }
-      .itin-gallery-img { width: 100%; height: 120px; object-fit: cover; display: block; background: #e8eaed; }
+      .itin-gallery-item { border-radius: 8px; overflow: hidden; border: 1px solid var(--itin-line); aspect-ratio: 16 / 9; }
+      .itin-gallery-img { width: 100%; height: 100%; object-fit: cover; display: block; background: #e8eaed; }
       .itin-gallery-cap { margin: 0; padding: 6px 8px; font-size: 9px; font-weight: 600; color: var(--itin-muted); background: #fafbfc; }
 
       /* Timeline days */
@@ -176,7 +176,7 @@ export function ItineraryLuxePrintStyles() {
       .itin-timeline-content { flex: 1; min-width: 0; padding-bottom: 4px; }
       .itin-day-title { margin: 0; font-size: 14px; font-weight: 800; color: var(--itin-navy); }
       .itin-day-body {
-        margin: 8px 0 0; font-size: 11px; line-height: 1.6; color: var(--itin-muted);
+        margin: 8px 0 0; font-size: 12px; line-height: 1.6; color: var(--itin-muted);
         white-space: pre-wrap;
       }
 
@@ -187,13 +187,13 @@ export function ItineraryLuxePrintStyles() {
         border: 1px solid #e8d4a8; border-radius: 8px;
       }
       .itin-dest-img {
-        width: 140px; min-width: 140px; height: 100px; border-radius: 6px;
-        overflow: hidden; flex-shrink: 0; background: #e8eaed;
+        width: 140px; min-width: 140px; height: 95px; border-radius: 6px;
+        aspect-ratio: 16 / 9; overflow: hidden; flex-shrink: 0; background: #e8eaed;
       }
       .itin-dest-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-      .itin-dest-name { margin: 0; font-size: 12px; font-weight: 800; color: var(--itin-navy); }
-      .itin-dest-route { margin: 3px 0 0; font-size: 9px; font-weight: 600; color: var(--itin-gold); }
-      .itin-dest-desc { margin: 6px 0 0; font-size: 10px; line-height: 1.5; color: var(--itin-muted); white-space: pre-wrap; }
+      .itin-dest-name { margin: 0; font-size: 12.5px; font-weight: 800; color: var(--itin-navy); }
+      .itin-dest-route { margin: 3px 0 0; font-size: 9.5px; font-weight: 600; color: var(--itin-gold); }
+      .itin-dest-desc { margin: 6px 0 0; font-size: 12px; line-height: 1.55; color: var(--itin-muted); white-space: pre-wrap; }
 
       /* Stay strip under day */
       .itin-stay {
@@ -201,31 +201,32 @@ export function ItineraryLuxePrintStyles() {
         background: #fff; border: 1px solid var(--itin-line); border-radius: 8px;
       }
       .itin-stay-img {
-        width: 140px; min-width: 140px; height: 100px; border-radius: 6px;
-        overflow: hidden; flex-shrink: 0;
+        width: 140px; min-width: 140px; height: 95px; border-radius: 6px;
+        aspect-ratio: 16 / 9; overflow: hidden; flex-shrink: 0;
       }
       .itin-stay-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
       .itin-stay-label { margin: 0; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--itin-gold); }
       .itin-stay-name { margin: 4px 0 0; font-size: 12px; font-weight: 700; color: var(--itin-navy); }
 
       .itin-day-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-      .itin-day-photo { border-radius: 6px; overflow: hidden; border: 1px solid var(--itin-line); }
-      .itin-day-photo img { width: 100%; height: 88px; object-fit: cover; display: block; }
+      .itin-day-photo { border-radius: 6px; overflow: hidden; border: 1px solid var(--itin-line); aspect-ratio: 16 / 9; }
+      .itin-day-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
       /* Inclusions */
-      .itin-inc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .itin-inc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: stretch; }
       .itin-inc-box {
+        display: flex; flex-direction: column; height: 100%;
         padding: 12px 14px; border-radius: 8px; border: 1px solid var(--itin-line);
       }
       .itin-inc-box--yes { background: #f0f7f4; border-color: #b8d4c8; }
       .itin-inc-box--no { background: #fafafa; }
-      .itin-inc-head { margin: 0 0 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
+      .itin-inc-head { margin: 0 0 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
       .itin-inc-box--yes .itin-inc-head { color: #166534; }
       .itin-inc-box--no .itin-inc-head { color: #991b1b; }
-      .itin-inc-list { margin: 0; padding: 0; list-style: none; }
+      .itin-inc-list { margin: 0; padding: 0; list-style: none; flex: 1; }
       .itin-inc-list li {
-        position: relative; padding-left: 16px; margin-bottom: 5px;
-        font-size: 10px; line-height: 1.45;
+        position: relative; padding-left: 16px; margin-bottom: 6px;
+        font-size: 12px; line-height: 1.5;
       }
       .itin-inc-box--yes .itin-inc-list li::before { content: "✓"; position: absolute; left: 0; color: #166534; font-weight: 800; }
       .itin-inc-box--no .itin-inc-list li::before { content: "×"; position: absolute; left: 0; color: #991b1b; font-weight: 800; }
@@ -233,26 +234,26 @@ export function ItineraryLuxePrintStyles() {
       .itin-transfers-title { margin: 0 0 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--itin-navy); }
 
       /* Policies */
-      .itin-policies { margin-top: 22px; padding: 16px; background: #f8f9fb; border-radius: 10px; border: 1px solid var(--itin-line); }
-      .itin-policies-intro { margin: 0 0 14px; font-size: 10px; color: var(--itin-muted); line-height: 1.5; }
-      .itin-policy { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--itin-line); }
+      .itin-policies { margin-top: 22px; padding: 16px; background: #f8f9fb; border-radius: 8px; border: 1px solid var(--itin-line); }
+      .itin-policies-intro { margin: 0 0 14px; font-size: 11px; color: var(--itin-muted); line-height: 1.5; }
+      .itin-policy { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--itin-line); }
       .itin-policy:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-      .itin-policy-title { margin: 0 0 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--itin-navy); }
-      .itin-policy-body { font-size: 9px; line-height: 1.55; color: var(--itin-muted); }
-      .itin-policy-p { margin: 0 0 4px; }
-      .itin-policy-bullet { margin: 0 0 3px; padding-left: 12px; position: relative; }
+      .itin-policy-title { margin: 0 0 6px; font-size: 13px; font-weight: 700; text-transform: none; color: var(--itin-navy); }
+      .itin-policy-body { font-size: 12px; line-height: 1.65; color: var(--itin-muted); }
+      .itin-policy-p { margin: 0 0 8px; }
+      .itin-policy-bullet { margin: 0 0 8px; padding-left: 14px; position: relative; }
       .itin-policy-bullet::before { content: "•"; position: absolute; left: 0; color: var(--itin-gold); font-weight: 700; }
 
       /* Payment footer */
       .itin-pay-footer {
         margin-top: 24px; padding: 18px; background: var(--itin-navy); color: #fff;
-        border-radius: 10px;
+        border-radius: 8px;
       }
-      .itin-pay-title { margin: 0 0 12px; font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--itin-gold-light); }
-      .itin-pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 10px; }
+      .itin-pay-title { margin: 0 0 10px; font-size: 13.5px; font-weight: 800; text-transform: none; color: var(--itin-gold-light); }
+      .itin-pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; font-size: 12px; }
       .itin-pay-grid dt { font-weight: 700; opacity: 0.85; margin: 0; }
       .itin-pay-grid dd { margin: 0 0 6px; font-weight: 600; }
-      .itin-pay-thanks { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 9px; opacity: 0.9; line-height: 1.5; }
+      .itin-pay-thanks { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 10px; opacity: 0.9; line-height: 1.5; }
 
       .pdf-avoid-break { page-break-inside: avoid; }
       .pdf-keep-together { break-inside: avoid !important; page-break-inside: avoid !important; }

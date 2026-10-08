@@ -281,7 +281,7 @@ export default function ProfessionalItineraryPdf({
         <h2 className="itin-section-title">Package details</h2>
         <div className="itin-inc-grid">
           <div className="itin-inc-box itin-inc-box--yes pdf-avoid-break">
-            <h4 className="itin-inc-head">Included</h4>
+            <h3 className="itin-inc-head">Included</h3>
             <ul className="itin-inc-list">
               {(sections.inclusions.length > 0 ? sections.inclusions : ['As per agreed package']).map((x, i) => (
                 <li key={i}>{x}</li>
@@ -289,7 +289,7 @@ export default function ProfessionalItineraryPdf({
             </ul>
           </div>
           <div className="itin-inc-box itin-inc-box--no pdf-avoid-break">
-            <h4 className="itin-inc-head">Not included</h4>
+            <h3 className="itin-inc-head">Not included</h3>
             <ul className="itin-inc-list">
               {(sections.exclusions.length > 0 ? sections.exclusions : ['See quotation']).map((x, i) => (
                 <li key={i}>{x}</li>

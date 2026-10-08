@@ -37,20 +37,20 @@ export default function PrintPdfToolbar({
           </p>
         ) : null}
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-          <div className="min-w-0">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+          <div className="min-w-0 flex-1">
             <p className="text-base font-bold tracking-tight text-slate-900">{title}</p>
             {subtitle != null && subtitle !== '' ? (
-              <p className="mt-1 text-xs leading-snug text-slate-600 sm:text-sm">{subtitle}</p>
+              <p className="mt-0.5 text-xs leading-snug text-slate-600 sm:text-sm">{subtitle}</p>
             ) : (
               <>
-                <p className="mt-1.5 text-xs leading-relaxed text-slate-600 sm:hidden">
+                <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:hidden">
                   <span className="font-semibold text-teal-800">Download PDF</span> — saves the file on this device (fastest).
                   <br />
                   <span className="font-semibold text-slate-800">Print / Save as PDF</span> — opens the browser; pick
                   &quot;Save as PDF&quot; in the print menu if you prefer that route.
                 </p>
-                <p className="mt-1.5 hidden text-sm leading-relaxed text-slate-600 sm:block">
+                <p className="mt-1 hidden text-sm leading-relaxed text-slate-600 sm:block">
                   Use <strong>Download PDF</strong> for a direct file. Use <strong>Print / Save as PDF</strong> for paper or to save
                   through your browser&apos;s print dialog.
                 </p>
@@ -58,7 +58,7 @@ export default function PrintPdfToolbar({
             )}
           </div>
 
-          <div className="grid w-full shrink-0 grid-cols-1 gap-2 sm:w-auto sm:min-w-[min(100%,20rem)] sm:grid-cols-2 sm:gap-2.5">
+          <div className="flex shrink-0 flex-wrap items-center gap-2 sm:gap-2.5">
             {onDownloadPdf ? (
               <button
                 type="button"
@@ -66,9 +66,9 @@ export default function PrintPdfToolbar({
                 onClick={() => void onDownloadPdf()}
                 aria-label={downloadLabel}
                 aria-busy={downloadDisabled}
-                className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-teal-600/15 outline-none hover:bg-teal-700 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[44px] sm:py-2.5"
+                className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white shadow-sm outline-none hover:bg-teal-800 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:bg-teal-900 disabled:cursor-not-allowed disabled:opacity-60 transition-colors"
               >
-                <Download className="h-5 w-5 shrink-0 opacity-95" aria-hidden />
+                <Download className="h-4 w-4 shrink-0 opacity-95" aria-hidden />
                 {downloadLabel}
               </button>
             ) : null}
@@ -76,9 +76,9 @@ export default function PrintPdfToolbar({
               type="button"
               onClick={() => window.print()}
               aria-label={printLabel}
-              className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 active:bg-slate-100 sm:min-h-[44px] sm:py-2.5"
+              className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 active:bg-slate-100 transition-colors"
             >
-              <Printer className="h-5 w-5 shrink-0 text-slate-600" aria-hidden />
+              <Printer className="h-4 w-4 shrink-0 text-slate-600" aria-hidden />
               {printLabel}
             </button>
           </div>

@@ -12,7 +12,7 @@ function PolicyBlock({ title, body }: { title: string; body: string }) {
   return (
     <div className="itin-policy pdf-avoid-break">
       <div className="pdf-keep-together">
-        <h4 className="itin-policy-title">{title}</h4>
+        <h3 className="itin-policy-title">{title}</h3>
         {isTitleLine && head !== title ? <p className="itin-policy-p" style={{ fontWeight: 700 }}>{head}</p> : null}
       </div>
       <div className="itin-policy-body">
