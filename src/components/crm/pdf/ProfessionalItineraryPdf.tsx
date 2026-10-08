@@ -31,6 +31,68 @@ function padDay(n: number) {
   return String(n).padStart(2, '0');
 }
 
+function getDeduplicatedDayParagraphs(
+  dayBody: string | null | undefined,
+  destinations: DestinationDetail[],
+  seenGlobalNorms: Set<string>
+): string[] {
+  const norm = (s: string) => (s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  const daySeen = new Set<string>();
+  const paragraphs: string[] = [];
+  const rawCandidateStrings: string[] = [];
+
+  if (dayBody && dayBody.trim()) {
+    const splits = dayBody.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+    rawCandidateStrings.push(...splits);
+  }
+
+  for (const dest of destinations) {
+    if (dest.description && dest.description.trim()) {
+      const splits = dest.description.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+      rawCandidateStrings.push(...splits);
+    }
+  }
+
+  for (const raw of rawCandidateStrings) {
+    let clean = raw.trim();
+    if (!clean) continue;
+
+    // Check if line is just a title or label ending in colon matching a destination name
+    const isHeaderOnly = destinations.some(
+      (dest) =>
+        norm(clean).replace(/:$/, '') === norm(dest.name) ||
+        norm(clean).replace(/:$/, '').startsWith(norm(dest.name))
+    );
+    if (isHeaderOnly && (clean.endsWith(':') || clean.length < 120)) {
+      continue;
+    }
+
+    // Strip redundant leading prefixes like "Destination Name (...): Actual text"
+    const colonMatch = clean.match(/^([A-Za-z0-9\s/→–—()\-]+):\s+(.+)$/);
+    if (colonMatch && colonMatch[2]) {
+      const prefixNorm = norm(colonMatch[1]);
+      const isPrefixDest = destinations.some(
+        (dest) => prefixNorm.includes(norm(dest.name)) || norm(dest.name).includes(prefixNorm)
+      );
+      if (isPrefixDest) {
+        clean = colonMatch[2].trim();
+      }
+    }
+
+    const n = norm(clean);
+    if (!n) continue;
+
+    // Skip duplicate across the day or already printed in a previous day
+    if (daySeen.has(n) || seenGlobalNorms.has(n)) continue;
+
+    daySeen.add(n);
+    seenGlobalNorms.add(n);
+    paragraphs.push(clean);
+  }
+
+  return paragraphs;
+}
+
 export default function ProfessionalItineraryPdf({
   branding,
   itin,
@@ -171,125 +233,116 @@ export default function ProfessionalItineraryPdf({
       <section className="itin-section">
         <h2 className="itin-section-title">Day-by-day plan</h2>
         <div className="itin-timeline">
-          {sections.days.map((d, idx) => {
-            const dayNum = d.day || idx + 1;
-            const rowImgs = assetsAfterDay(dayNum);
-            const destIds = d.destination_ids || [];
-            const night = nightStayForDay(dayNum, sections.night_stays || []);
-            const hotel = night?.hotel_id ? hotelsById.get(night.hotel_id) : undefined;
+          {(() => {
+            const globalSeenParagraphs = new Set<string>();
+            return sections.days.map((d, idx) => {
+              const dayNum = d.day || idx + 1;
+              const rowImgs = assetsAfterDay(dayNum);
+              const destIds = d.destination_ids || [];
+              const night = nightStayForDay(dayNum, sections.night_stays || []);
+              const hotel = night?.hotel_id ? hotelsById.get(night.hotel_id) : undefined;
 
-            // Avoid duplicate images: skip any photo that is already displayed in the destination card or hotel card
-            const normUrl = (u?: string | null) =>
-              (u || '').trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '');
-            const attachedUrls = new Set<string>();
-            for (const did of destIds) {
-              const u = normUrl(destinationsById.get(did)?.featured_image_url);
-              if (u) attachedUrls.add(u);
-            }
-            if (hotel?.featured_image_url) {
-              const u = normUrl(hotel.featured_image_url);
-              if (u) attachedUrls.add(u);
-            }
+              const attachedDests = destIds
+                .map((did) => destinationsById.get(did))
+                .filter(Boolean) as DestinationDetail[];
 
-            const uniqueDayImgs: typeof rowImgs = [];
-            const seenUrls = new Set<string>();
-            for (const img of rowImgs) {
-              const u = normUrl(img.image_url);
-              if (!u) continue;
-              if (attachedUrls.has(u)) continue;
-              if (seenUrls.has(u)) continue;
-              seenUrls.add(u);
-              uniqueDayImgs.push(img);
-            }
+              // Determine image for the day: first attached destination image, or first day row image
+              const featuredImg =
+                attachedDests.find((dest) => dest.featured_image_url)?.featured_image_url ||
+                rowImgs[0]?.image_url;
 
-            // Deduplicate day details and titles if they are already presented in the destination card
-            const normText = (s?: string | null) => (s || '').trim().replace(/\s+/g, ' ').toLowerCase();
-            const dayBodyNorm = normText(d?.body);
-            const attachedDestDescriptions = destIds
-              .map((did) => normText(destinationsById.get(did)?.description))
-              .filter(Boolean);
+              // Determine day title: if d.title is duplicate of previous day's title while destination is different, use destination name
+              const prevDay = idx > 0 ? sections.days[idx - 1] : null;
+              const normText = (s?: string | null) => (s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+              const isPrevTitleDup =
+                prevDay &&
+                d.title &&
+                prevDay.title &&
+                normText(d.title) === normText(prevDay.title);
+              const dayTitle =
+                isPrevTitleDup && attachedDests[0]?.name
+                  ? attachedDests[0].name
+                  : d?.title?.trim() || attachedDests[0]?.name || `Day ${dayNum}`;
 
-            // If day body is identical to or fully contains the attached destination description,
-            // suppress the plain text body above so the destination card can present the details cleanly without repetition
-            const isBodyDuplicateOfDest =
-              attachedDestDescriptions.length > 0 &&
-              attachedDestDescriptions.some(
-                (descNorm) => descNorm && (dayBodyNorm === descNorm || dayBodyNorm.startsWith(descNorm))
-              );
+              // Build route subtitle (e.g. "Srinagar · Srinagar → Katra Airport")
+              const firstDest = attachedDests[0];
+              const routeSubtitle = firstDest
+                ? [
+                    firstDest.base_location,
+                    firstDest.route_from && firstDest.route_to
+                      ? `${firstDest.route_from} → ${firstDest.route_to}`
+                      : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')
+                : '';
 
-            const shouldShowDayBody = Boolean(d?.body?.trim()) && !isBodyDuplicateOfDest;
+              // Get deduplicated paragraphs so text NEVER comes twice
+              const paragraphs = getDeduplicatedDayParagraphs(d?.body, attachedDests, globalSeenParagraphs);
 
-            return (
-              <div key={idx} className="itin-timeline-item">
-                <div className="itin-timeline-badge">{padDay(dayNum)}</div>
-                <div className="itin-timeline-content">
-                  <h3 className="itin-day-title">{d?.title?.trim() || `Day ${dayNum}`}</h3>
-                  {shouldShowDayBody ? <p className="itin-day-body">{d.body}</p> : null}
+              // Filter out rowImgs that are already featured
+              const normUrl = (u?: string | null) =>
+                (u || '').trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+              const featuredNorm = normUrl(featuredImg);
+              const hotelNorm = normUrl(hotel?.featured_image_url);
+              const extraPhotos = rowImgs.filter((img) => {
+                const u = normUrl(img.image_url);
+                return u && u !== featuredNorm && u !== hotelNorm;
+              });
 
-                  {destIds.length > 0 ? (
-                    <div className="itin-dest-list">
-                      {destIds.map((did) => {
-                        const dest = destinationsById.get(did);
-                        if (!dest) return null;
-                        const isSingleDestWithMatchingTitle =
-                          destIds.length === 1 && normText(dest.name) === normText(d?.title);
-                        const showDestDesc =
-                          Boolean(dest.description?.trim()) &&
-                          (!shouldShowDayBody ||
-                            !normText(dest.description) ||
-                            !dayBodyNorm.includes(normText(dest.description)));
-
-                        return (
-                          <div key={did} className="itin-dest pdf-avoid-break">
-                            {dest.featured_image_url ? (
-                              <div className="itin-dest-img">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={dest.featured_image_url} alt="" crossOrigin="anonymous" />
-                              </div>
-                            ) : null}
-                            <div>
-                              {!isSingleDestWithMatchingTitle ? (
-                                <p className="itin-dest-name">{dest.name}</p>
-                              ) : null}
-                              <p className="itin-dest-route">
-                                {dest.base_location}
-                                {dest.route_from && dest.route_to
-                                  ? ` · ${dest.route_from} → ${dest.route_to}`
-                                  : ''}
-                              </p>
-                              {showDestDesc ? <p className="itin-dest-desc">{dest.description}</p> : null}
-                            </div>
-                          </div>
-                        );
-                      })}
+              return (
+                <div key={idx} className="itin-day-card pdf-avoid-break">
+                  <div className="itin-day-card-header">
+                    <div className="itin-day-badge">Day {padDay(dayNum)}</div>
+                    <div className="itin-day-header-text">
+                      <h3 className="itin-day-title">{dayTitle}</h3>
+                      {routeSubtitle ? <p className="itin-day-route">{routeSubtitle}</p> : null}
                     </div>
-                  ) : null}
+                  </div>
+
+                  <div className="itin-day-card-content">
+                    {featuredImg ? (
+                      <div className="itin-day-card-img">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={featuredImg} alt="" crossOrigin="anonymous" />
+                      </div>
+                    ) : null}
+
+                    <div className="itin-day-card-text">
+                      {paragraphs.length > 0 ? (
+                        paragraphs.map((p, pIdx) => (
+                          <p key={pIdx} className="itin-day-para">
+                            {p}
+                          </p>
+                        ))
+                      ) : (
+                        <p className="itin-day-para text-slate-400 italic">Day details will be provided during travel.</p>
+                      )}
+                    </div>
+                  </div>
 
                   {hotel && night ? (
-                    <div className="itin-stay pdf-avoid-break">
+                    <div className="itin-day-card-stay">
                       {hotel.featured_image_url ? (
-                        <div className="itin-stay-img">
+                        <div className="itin-day-card-stay-img">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={hotel.featured_image_url} alt="" crossOrigin="anonymous" />
                         </div>
                       ) : null}
                       <div>
-                        <p className="itin-stay-label">Overnight · Night {night.night}</p>
-                        <p className="itin-stay-name">{hotel.name}</p>
-                        <p className="itin-hotel-meta">
-                          {hotel.location ? `${hotel.location} · ` : ''}
-                          {night.room_category || 'Room TBC'} · {night.meal_plan || 'MAP'}
-                        </p>
-                        <p className="itin-hotel-dates">
-                          {night.check_in} → {night.check_out}
-                        </p>
+                        <span className="itin-stay-label">Overnight · Night {night.night}: </span>
+                        <strong className="itin-stay-name">{hotel.name}</strong>
+                        <span className="itin-hotel-meta">
+                          {hotel.location ? ` (${hotel.location})` : ''} · {night.room_category || 'Room TBC'} · {night.meal_plan || 'MAP'}
+                          {night.check_in && night.check_out ? ` · ${night.check_in} → ${night.check_out}` : ''}
+                        </span>
                       </div>
                     </div>
                   ) : null}
 
-                  {uniqueDayImgs.length > 0 ? (
+                  {extraPhotos.length > 0 ? (
                     <div className="itin-day-photos">
-                      {uniqueDayImgs.map((img) => (
+                      {extraPhotos.map((img) => (
                         <div key={img.id} className="itin-day-photo">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={img.image_url} alt={img.caption || ''} />
@@ -298,9 +351,9 @@ export default function ProfessionalItineraryPdf({
                     </div>
                   ) : null}
                 </div>
-              </div>
-            );
-          })}
+              );
+            });
+          })()}
         </div>
       </section>
 

@@ -157,34 +157,144 @@ export function ItineraryLuxePrintStyles() {
       .itin-gallery-img { width: 100%; height: 100%; object-fit: cover; display: block; background: #e8eaed; }
       .itin-gallery-cap { margin: 0; padding: 6px 8px; font-size: 9px; font-weight: 600; color: var(--itin-muted); background: #fafbfc; }
 
-      /* Timeline days */
-      .itin-timeline { position: relative; padding-left: 4px; }
-      .itin-timeline-item {
-        display: flex; gap: 14px; margin-bottom: 18px; position: relative;
+      /* Day-by-day plan: Single Unified Crisp White Cards */
+      .itin-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        position: relative;
+        padding-left: 0 !important;
       }
-      .itin-timeline-item:not(:last-child)::before {
-        content: ""; position: absolute; left: 17px; top: 36px; bottom: -18px;
-        width: 2px; background: var(--itin-line);
-      }
-      .itin-timeline-badge {
-        width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%;
-        background: var(--itin-navy); color: #fff;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 11px; font-weight: 900; z-index: 1;
-        border: 2px solid var(--itin-gold);
-      }
-      .itin-timeline-content { flex: 1; min-width: 0; padding-bottom: 4px; }
-      .itin-day-title { margin: 0; font-size: 14px; font-weight: 800; color: var(--itin-navy); }
-      .itin-day-body {
-        margin: 8px 0 0; font-size: 12px; line-height: 1.6; color: var(--itin-muted);
-        white-space: pre-wrap;
+      .itin-timeline::before { display: none !important; }
+
+      .itin-day-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        position: relative;
       }
 
-      /* Destination feature */
+      .itin-day-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .itin-day-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: var(--itin-navy);
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .itin-day-header-text {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .itin-day-title {
+        margin: 0;
+        font-size: 14.5px;
+        font-weight: 800;
+        color: var(--itin-navy);
+        line-height: 1.35;
+      }
+
+      .itin-day-route {
+        margin: 3px 0 0;
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--itin-gold);
+      }
+
+      .itin-day-card-content {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+      }
+
+      .itin-day-card-img {
+        width: 160px;
+        min-width: 160px;
+        height: 110px;
+        border-radius: 8px;
+        aspect-ratio: 16 / 10;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+      }
+
+      .itin-day-card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .itin-day-card-text {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .itin-day-para {
+        margin: 0 0 8px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--itin-muted);
+        white-space: pre-wrap;
+      }
+      .itin-day-para:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Stay strip under day card */
+      .itin-day-card-stay {
+        margin-top: 12px;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 11px;
+      }
+      .itin-day-card-stay-img {
+        width: 48px;
+        height: 36px;
+        border-radius: 4px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #e2e8f0;
+      }
+      .itin-day-card-stay-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      /* Fallback destination & legacy stay styles */
       .itin-dest-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
       .itin-dest {
-        display: flex; gap: 12px; padding: 10px; background: var(--itin-gold-light);
-        border: 1px solid #e8d4a8; border-radius: 8px;
+        display: flex; gap: 12px; padding: 10px; background: #ffffff;
+        border: 1px solid #e2e8f0; border-radius: 8px;
       }
       .itin-dest-img {
         width: 140px; min-width: 140px; height: 95px; border-radius: 6px;
@@ -195,7 +305,6 @@ export function ItineraryLuxePrintStyles() {
       .itin-dest-route { margin: 3px 0 0; font-size: 9.5px; font-weight: 600; color: var(--itin-gold); }
       .itin-dest-desc { margin: 6px 0 0; font-size: 12px; line-height: 1.55; color: var(--itin-muted); white-space: pre-wrap; }
 
-      /* Stay strip under day */
       .itin-stay {
         margin-top: 10px; display: flex; gap: 12px; padding: 10px;
         background: #fff; border: 1px solid var(--itin-line); border-radius: 8px;
@@ -322,13 +431,31 @@ export function ItineraryLuxePrintStyles() {
         float: left !important; width: 140px !important; height: 100px !important;
         margin: 0 12px 8px 0 !important;
       }
+      .itinerary-pdf-exporting .itin-day-card,
+      .itin-pdf-sandbox .itin-day-card {
+        display: block !important; background: #ffffff !important; border: 1px solid #e2e8f0 !important;
+        margin-bottom: 14px !important; page-break-inside: avoid !important; break-inside: avoid !important;
+      }
+      .itinerary-pdf-exporting .itin-day-card-content,
+      .itin-pdf-sandbox .itin-day-card-content {
+        display: block !important;
+      }
+      .itinerary-pdf-exporting .itin-day-card-img,
+      .itin-pdf-sandbox .itin-day-card-img {
+        float: left !important; width: 150px !important; height: 105px !important;
+        margin: 0 14px 8px 0 !important;
+      }
+      .itinerary-pdf-exporting .itin-day-card-text,
+      .itin-pdf-sandbox .itin-day-card-text {
+        overflow: hidden !important;
+      }
+      .itinerary-pdf-exporting .itin-day-card-stay,
+      .itin-pdf-sandbox .itin-day-card-stay {
+        clear: both !important; display: block !important;
+      }
       .itinerary-pdf-exporting .itin-timeline-item,
       .itin-pdf-sandbox .itin-timeline-item {
-        display: block !important; padding-left: 48px !important; position: relative !important;
-      }
-      .itinerary-pdf-exporting .itin-timeline-badge,
-      .itin-pdf-sandbox .itin-timeline-badge {
-        position: absolute !important; left: 0 !important; top: 0 !important;
+        display: block !important; position: relative !important;
       }
       .itinerary-pdf-exporting .itin-timeline-item::before,
       .itin-pdf-sandbox .itin-timeline-item::before { display: none !important; }
