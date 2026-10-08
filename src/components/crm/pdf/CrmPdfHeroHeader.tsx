@@ -13,23 +13,41 @@ export function CrmPdfHeroHeaderStyles() {
         overflow: hidden;
         margin-bottom: 16px;
         border-radius: 10px;
+        background-color: #0c1f2d !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .crm-pdf-hero-bg {
         position: absolute;
-        inset: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
         object-position: center;
+        z-index: 1;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .crm-pdf-hero-overlay {
         position: absolute;
-        inset: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(6, 32, 48, 0.65);
         background: linear-gradient(105deg, rgba(6, 32, 48, 0.88) 0%, rgba(6, 32, 48, 0.55) 55%, rgba(6, 32, 48, 0.35) 100%);
+        z-index: 2;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .crm-pdf-hero-content {
         position: relative;
-        z-index: 1;
+        z-index: 3;
         display: flex;
         align-items: flex-start;
         gap: 14px;

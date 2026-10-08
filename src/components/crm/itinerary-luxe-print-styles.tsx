@@ -28,24 +28,59 @@ export function ItineraryLuxePrintStyles() {
 
       /* Letterhead */
       .itin-letterhead {
+        position: relative;
+        overflow: hidden;
+        padding: 14px 18px;
+        background: #0c1929 !important;
+        background-color: #0c1929 !important;
+        color: #fff;
+        border-bottom: 3px solid #b8860b !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .itin-letterhead-bg {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: 1;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .itin-letterhead-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(12, 25, 41, 0.75);
+        background: linear-gradient(105deg, rgba(12, 25, 41, 0.92) 0%, rgba(12, 25, 41, 0.68) 60%, rgba(12, 25, 41, 0.45) 100%);
+        z-index: 2;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .itin-letterhead-content {
+        position: relative;
+        z-index: 3;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding: 14px 18px;
-        background: var(--itin-navy);
-        color: #fff;
-        border-bottom: 3px solid var(--itin-gold);
       }
       .itin-letterhead-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
       .itin-letterhead-logo {
         width: 52px; height: 52px; object-fit: contain;
         background: #fff; border-radius: 6px; padding: 4px; flex-shrink: 0;
       }
-      .itin-letterhead-brand { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: 0.02em; line-height: 1.25; }
-      .itin-letterhead-tag { margin: 3px 0 0; font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--itin-gold-light); opacity: 0.95; }
-      .itin-letterhead-right { text-align: right; font-size: 9px; line-height: 1.55; opacity: 0.92; flex-shrink: 0; }
+      .itin-letterhead-brand { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: 0.02em; line-height: 1.25; color: #fff; }
+      .itin-letterhead-tag { margin: 3px 0 0; font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #f5ecd6; opacity: 0.95; }
+      .itin-letterhead-right { text-align: right; font-size: 9px; line-height: 1.55; opacity: 0.92; flex-shrink: 0; color: #fff; }
       .itin-letterhead-right p { margin: 0 0 2px; }
+      .itin-chip--rate {
+        background: #0c1929 !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border: 1px solid #b8860b !important;
+      }
 
       /* Cover title */
       .itin-cover {
@@ -83,7 +118,7 @@ export function ItineraryLuxePrintStyles() {
         font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
         color: var(--itin-gold); margin-bottom: 3px;
       }
-      .itin-fact-value { font-size: 11px; font-weight: 600; color: var(--itin-ink); word-break: break-word; }
+      .itin-fact-value { font-size: 11px; font-weight: 700; color: var(--itin-ink); word-break: break-word; }
 
       /* Sections */
       .itin-section { margin-top: 22px; padding: 0 2px; }

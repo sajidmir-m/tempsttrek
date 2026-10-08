@@ -6,6 +6,7 @@ import type { BookingVoucherPayload } from '@/lib/crm-catalog';
 import { countDaysBetween, countNightsBetween, nightStayForDay } from '@/lib/itinerary-utils';
 import ItineraryPdfPolicies from './ItineraryPdfPolicies';
 import type { DestinationDetail } from '../itinerary/DestinationDayCards';
+import { resolvePdfHeroImage } from '@/lib/pdf-branding';
 
 export type ItineraryPdfHotel = {
   id: string;
@@ -50,12 +51,14 @@ export default function ProfessionalItineraryPdf({
   const assetsAfterDay = (dayNum: number) => assets.filter((a) => a.after_day === dayNum);
   const bank = branding.bankDetails;
 
-  const facts: { label: string; value: string }[] = [
+  const headerBg = resolvePdfHeroImage(branding.pdfHeaderImageUrl);
+
+  const facts: { label: string; value: string; isRate?: boolean }[] = [
     { label: 'Guest', value: String(itin.customer_name || '—') },
     { label: 'Phone', value: String(itin.customer_phone || '—') },
     { label: 'Email', value: String(itin.customer_email || '—') },
   ];
-  if (quote != null && quote > 0) facts.push({ label: 'Quote', value: `₹ ${quote.toLocaleString('en-IN')}` });
+  if (quote != null && quote > 0) facts.push({ label: 'Package Rate', value: `₹ ${quote.toLocaleString('en-IN')}`, isRate: true });
   if (ps?.pax != null) facts.push({ label: 'Pax', value: String(ps.pax) });
   if (ps?.rooms != null) facts.push({ label: 'Rooms', value: String(ps.rooms) });
 
@@ -64,19 +67,28 @@ export default function ProfessionalItineraryPdf({
   return (
     <div className="itin-doc itinerary-pdf-pro">
       <header className="itin-letterhead pdf-avoid-break">
-        <div className="itin-letterhead-left">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={branding.logoUrl} alt="" className="itin-letterhead-logo" crossOrigin="anonymous" />
-          <div>
-            <p className="itin-letterhead-brand">{branding.companyName}</p>
-            <p className="itin-letterhead-tag">{branding.tagline}</p>
+        {headerBg ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={headerBg} alt="" className="itin-letterhead-bg" crossOrigin="anonymous" />
+            <div className="itin-letterhead-overlay" aria-hidden />
+          </>
+        ) : null}
+        <div className="itin-letterhead-content">
+          <div className="itin-letterhead-left">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={branding.logoUrl} alt="" className="itin-letterhead-logo" crossOrigin="anonymous" />
+            <div>
+              <p className="itin-letterhead-brand">{branding.companyName}</p>
+              <p className="itin-letterhead-tag">{branding.tagline}</p>
+            </div>
           </div>
-        </div>
-        <div className="itin-letterhead-right">
-          <p>{branding.address}</p>
-          <p>{branding.phones}</p>
-          <p>{branding.email}</p>
-          <p>{branding.website}</p>
+          <div className="itin-letterhead-right">
+            <p>{branding.address}</p>
+            <p>{branding.phones}</p>
+            <p>{branding.email}</p>
+            <p>{branding.website}</p>
+          </div>
         </div>
       </header>
 
@@ -85,15 +97,20 @@ export default function ProfessionalItineraryPdf({
         <h1 className="itin-cover-title">{String(itin.title ?? 'Kashmir tour package')}</h1>
         <div className="itin-cover-meta">
           <span className="itin-chip">Ref #{itinNumber}</span>
+          {quote != null && quote > 0 ? (
+            <span className="itin-chip itin-chip--rate">Rate: ₹ {quote.toLocaleString('en-IN')}</span>
+          ) : null}
           {nights > 0 ? <span className="itin-chip itin-chip--gold">{nights} nights · {days} days</span> : null}
           {travelStart ? <span className="itin-chip itin-chip--gold">From {travelStart}</span> : null}
           {travelEnd ? <span className="itin-chip itin-chip--gold">To {travelEnd}</span> : null}
         </div>
         <div className={factsClass}>
           {facts.map((f) => (
-            <div key={f.label} className="itin-fact">
+            <div key={f.label} className={`itin-fact ${f.isRate ? 'itin-fact--rate' : ''}`}>
               <div className="itin-fact-label">{f.label}</div>
-              <div className="itin-fact-value">{f.value}</div>
+              <div className="itin-fact-value" style={f.isRate ? { fontWeight: 800, color: '#0c1929' } : undefined}>
+                {f.value}
+              </div>
             </div>
           ))}
         </div>

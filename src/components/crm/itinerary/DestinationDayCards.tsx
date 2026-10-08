@@ -14,7 +14,13 @@ export type DestinationDetail = {
   featured_image_url: string | null;
 };
 
-export default function DestinationDayCards({ destinationIds }: { destinationIds: string[] }) {
+export default function DestinationDayCards({
+  destinationIds,
+  onRemoveDestination,
+}: {
+  destinationIds: string[];
+  onRemoveDestination?: (id: string) => void;
+}) {
   const [dests, setDests] = useState<DestinationDetail[]>([]);
   const [gallery, setGallery] = useState<Record<string, string[]>>({});
 
@@ -65,20 +71,32 @@ export default function DestinationDayCards({ destinationIds }: { destinationIds
               </div>
             ) : null}
             <div className="p-3">
-            <div className="flex gap-3">
-              {imgs[0] ? null : (
-                <div className="h-12 w-16 shrink-0 rounded-lg bg-teal-100" />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-teal-950">{d.name}</p>
-                <p className="text-xs text-teal-800">
-                  {d.base_location}
-                  {d.route_from && d.route_to ? ` · ${d.route_from} → ${d.route_to}` : ''}
-                </p>
-                {d.description ? (
-                  <p className="text-xs text-gray-700 mt-1 whitespace-pre-wrap line-clamp-4">{d.description}</p>
-                ) : null}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex gap-3 min-w-0 flex-1">
+                {imgs[0] ? null : (
+                  <div className="h-12 w-16 shrink-0 rounded-lg bg-teal-100" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-teal-950">{d.name}</p>
+                  <p className="text-xs text-teal-800">
+                    {d.base_location}
+                    {d.route_from && d.route_to ? ` · ${d.route_from} → ${d.route_to}` : ''}
+                  </p>
+                  {d.description ? (
+                    <p className="text-xs text-gray-700 mt-1.5 whitespace-pre-wrap">{d.description}</p>
+                  ) : null}
+                </div>
               </div>
+              {onRemoveDestination && (
+                <button
+                  type="button"
+                  onClick={() => onRemoveDestination(d.id)}
+                  className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-800 hover:underline px-2 py-1 rounded"
+                  title="Remove destination from this day"
+                >
+                  Remove
+                </button>
+              )}
             </div>
             {imgs.length > 1 ? (
               <div className="mt-2 grid grid-cols-3 gap-1.5">

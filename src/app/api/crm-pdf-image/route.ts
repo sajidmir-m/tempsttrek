@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-function allowedSupabaseHost(): string | null {
+function isAllowedHost(hostname: string): boolean {
   const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!raw) return null;
-  try {
-    return new URL(raw).hostname;
-  } catch {
-    return null;
+  if (raw) {
+    try {
+      if (new URL(raw).hostname === hostname) return true;
+    } catch {
+      /* ignore */
+    }
   }
+  if (hostname.endsWith('.supabase.co')) return true;
+  if (hostname === 'images.unsplash.com' || hostname.endsWith('.unsplash.com')) return true;
+  if (hostname === 'images.pexels.com' || hostname.endsWith('.pexels.com')) return true;
+  return false;
 }
 
 /**
  * Same-origin proxy for itinerary images so html2canvas can rasterize without CORS taint.
- * Only fetches URLs on the configured Supabase project host (SSRF-safe).
+ * Only fetches URLs on configured Supabase or trusted image hosts (SSRF-safe).
  */
 export async function GET(req: NextRequest) {
   const raw = req.nextUrl.searchParams.get('url');
@@ -31,8 +36,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid protocol' }, { status: 400 });
   }
 
-  const allowed = allowedSupabaseHost();
-  if (!allowed || target.hostname !== allowed) {
+  if (!isAllowedHost(target.hostname)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

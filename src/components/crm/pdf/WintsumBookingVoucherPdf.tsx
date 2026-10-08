@@ -114,6 +114,14 @@ export default function WintsumBookingVoucherPdf({
             <span className="crm-pdf-k">Meal plan</span>
             <span className="crm-pdf-v">{p.meal_plan || '—'}</span>
           </div>
+          {total > 0 && (
+            <div className="crm-pdf-kv">
+              <span className="crm-pdf-k">Total rate</span>
+              <span className="crm-pdf-v" style={{ fontWeight: 700 }}>
+                {formatInr(total)}
+              </span>
+            </div>
+          )}
         </div>
       </section>
 
@@ -161,18 +169,18 @@ export default function WintsumBookingVoucherPdf({
         <section className="crm-pdf-pay-card pdf-keep-together">
           <h2 className="crm-pdf-section-title">Payment summary</h2>
           <div className="crm-pdf-pay-line">
-            <span>Package total</span>
-            <strong>{formatInr(total)}</strong>
+            <span style={{ fontWeight: 700 }}>Package total</span>
+            <strong style={{ fontWeight: 800 }}>{formatInr(total)}</strong>
           </div>
           <div className="crm-pdf-pay-line">
-            <span>Advance received</span>
-            <strong>{formatInr(advance)}</strong>
+            <span style={{ fontWeight: 700 }}>Advance received</span>
+            <strong style={{ fontWeight: 800 }}>{formatInr(advance)}</strong>
           </div>
           <div className="crm-pdf-pay-line crm-pdf-pay-balance">
-            <span>Balance due</span>
-            <strong>{formatInr(balance)}</strong>
+            <span style={{ fontWeight: 700 }}>Balance due</span>
+            <strong style={{ fontWeight: 800 }}>{formatInr(balance)}</strong>
           </div>
-          <p style={{ fontSize: 11, marginTop: 8, fontWeight: 600 }}>
+          <p style={{ fontSize: 11, marginTop: 8, fontWeight: 700 }}>
             Status: {paymentTone(p.payment_status || 'pending')}
           </p>
         </section>

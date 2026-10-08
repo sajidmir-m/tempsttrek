@@ -108,6 +108,8 @@ function VoucherPrintInner() {
         downloadDisabled={pdfBusy}
       />
       <div ref={pdfRef} className="pb-16">
+        <CrmPdfHeroHeaderStyles />
+        <CrmPdfDocumentStyles />
         <WintsumBookingVoucherPdf data={voucherData} branding={branding} />
       </div>
     </div>

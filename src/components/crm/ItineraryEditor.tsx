@@ -203,6 +203,28 @@ export default function ItineraryEditor({
     }
   };
 
+  const loadAssets = async () => {
+    if (!itineraryId) return;
+    try {
+      const { data: a, error: aErr } = await supabase
+        .from('crm_itinerary_assets')
+        .select('*')
+        .eq('itinerary_id', itineraryId)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
+      if (aErr) {
+        if (isMissingCrmItineraryAssetsTable(aErr)) {
+          setAssets([]);
+          setAssetsTableMissing(true);
+        }
+      } else {
+        setAssets((a || []).map((r) => normalizeAssetRow(r as Record<string, unknown>)));
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -333,14 +355,32 @@ export default function ItineraryEditor({
   ) => {
     const d = sections.days[dayIdx];
     if (!d) return;
+
     const route =
       dest.route_from && dest.route_to ? `${dest.route_from} → ${dest.route_to}` : dest.base_location;
-    const detail = dest.description?.trim() ? `\n  ${dest.description.trim()}` : '';
-    const line = `• ${dest.name} (${route})${detail}`;
+
+    // Check if day title is default/generic and auto-set it to the destination name
+    const trimmedTitle = (d.title || '').trim();
+    const isGenericTitle =
+      !trimmedTitle ||
+      /^Day\s*\d+$/i.test(trimmedTitle) ||
+      trimmedTitle === 'Arrival & Srinagar' ||
+      trimmedTitle === 'Local sightseeing';
+    const newTitle = isGenericTitle ? dest.name : d.title;
+
+    // Put the detailed description cleanly into the details box
+    const cleanDesc = dest.description?.trim() || '';
+    let newBody = d.body.trim();
+    if (!newBody) {
+      newBody = cleanDesc || `${dest.name} (${route})`;
+    } else {
+      newBody = `${newBody}\n\n${dest.name} (${route}):\n${cleanDesc || ''}`.trim();
+    }
+
     const ids = [...(d.destination_ids || [])];
     if (!ids.includes(dest.id)) ids.push(dest.id);
-    const sep = d.body.trim() ? '\n\n' : '';
-    updateDay(dayIdx, { body: `${d.body}${sep}${line}`, destination_ids: ids });
+
+    updateDay(dayIdx, { title: newTitle, body: newBody, destination_ids: ids });
 
     if (!itineraryId || assetsTableMissing) return;
     const dayNum = d.day;
@@ -372,7 +412,7 @@ export default function ItineraryEditor({
       if (error) break;
       existingUrls.add(url);
     }
-    await load();
+    await loadAssets();
   };
 
   const del = async () => {
@@ -418,7 +458,7 @@ export default function ItineraryEditor({
         kind: kind === 'general' ? null : kind,
       });
       if (error) throw error;
-      await load();
+      await loadAssets();
     } catch (e: any) {
       alert('Upload failed: ' + (e?.message || String(e)));
     } finally {
@@ -449,7 +489,7 @@ export default function ItineraryEditor({
     if (!canDelete) return;
     const { error } = await supabase.from('crm_itinerary_assets').delete().eq('id', assetId);
     if (error) alert(error.message);
-    else await load();
+    else await loadAssets();
   };
 
   if (loading) return <p className="text-gray-500 py-10">Loading itinerary…</p>;
@@ -565,15 +605,25 @@ export default function ItineraryEditor({
             value={(row.travel_end as string) || ''}
             onChange={(e) => setRow((p) => ({ ...p, travel_end: e.target.value || null }))}
           />
-          <input
-            type="number"
-            className="border rounded-xl px-4 py-3 text-sm"
-            placeholder="Quote price (₹)"
-            value={(row as { quote_price?: number | null }).quote_price ?? ''}
-            onChange={(e) =>
-              setRow((p) => ({ ...p, quote_price: e.target.value ? Number(e.target.value) : null }))
-            }
-          />
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-gray-700">Package Rate / Quote (₹)</label>
+              {(row as { quote_price?: number | null }).quote_price != null && Number((row as { quote_price?: number | null }).quote_price) > 0 ? (
+                <span className="text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-lg">
+                  ₹ {Number((row as { quote_price?: number | null }).quote_price).toLocaleString('en-IN')}
+                </span>
+              ) : null}
+            </div>
+            <input
+              type="number"
+              className="border rounded-xl px-4 py-3 text-sm font-bold text-gray-900 bg-white"
+              placeholder="e.g. 45000"
+              value={(row as { quote_price?: number | null }).quote_price ?? ''}
+              onChange={(e) =>
+                setRow((p) => ({ ...p, quote_price: e.target.value ? Number(e.target.value) : null }))
+              }
+            />
+          </div>
         </div>
 
         <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-3">
@@ -670,7 +720,13 @@ export default function ItineraryEditor({
                     onSelectDestination={(dest) => void attachDestinationToDay(dest, idx)}
                   />
                   {(d.destination_ids?.length ?? 0) > 0 ? (
-                    <DestinationDayCards destinationIds={d.destination_ids || []} />
+                    <DestinationDayCards
+                      destinationIds={d.destination_ids || []}
+                      onRemoveDestination={(destId) => {
+                        const ids = (d.destination_ids || []).filter((id) => id !== destId);
+                        updateDay(idx, { destination_ids: ids });
+                      }}
+                    />
                   ) : null}
                   <DayHotelPicker
                     dayNumber={d.day}

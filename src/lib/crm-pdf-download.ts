@@ -17,19 +17,86 @@ const CAPTURE_PREP_MAX_MS = 18000;
 
 /** Injected into html2canvas clone so text/colors stay solid (not washed out). */
 const ITINERARY_CAPTURE_BOOST_CSS = `
-  .itin-doc, .itinerary-pdf-pro, .itin-doc *, .itinerary-pdf-pro * {
+  .itin-doc, .itinerary-pdf-pro, .itin-doc *, .itinerary-pdf-pro *,
+  .crm-pdf-doc, .crm-pdf-doc * {
     opacity: 1 !important;
     visibility: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
   .itin-letterhead {
+    position: relative !important;
+    overflow: hidden !important;
     background: #0c1929 !important;
+    background-color: #0c1929 !important;
     color: #ffffff !important;
     border-bottom: 3px solid #b8860b !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  .itin-letterhead * { color: #ffffff !important; }
+  .itin-letterhead-bg {
+    position: absolute !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    width: 100% !important; height: 100% !important;
+    object-fit: cover !important;
+    z-index: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .itin-letterhead-overlay {
+    position: absolute !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    width: 100% !important; height: 100% !important;
+    background-color: rgba(12, 25, 41, 0.75) !important;
+    z-index: 2 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .itin-letterhead-content {
+    position: relative !important;
+    z-index: 3 !important;
+  }
+  .itin-letterhead-content * { color: #ffffff !important; }
   .itin-letterhead-tag { color: #f5ecd6 !important; }
+  .crm-pdf-hero {
+    position: relative !important;
+    min-height: 168px !important;
+    overflow: hidden !important;
+    margin-bottom: 16px !important;
+    border-radius: 10px !important;
+    background: #0c1f2d !important;
+    background-color: #0c1f2d !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .crm-pdf-hero * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .crm-pdf-hero-bg {
+    position: absolute !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    width: 100% !important; height: 100% !important;
+    object-fit: cover !important;
+    z-index: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .crm-pdf-hero-overlay {
+    position: absolute !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    width: 100% !important; height: 100% !important;
+    background-color: rgba(6, 32, 48, 0.65) !important;
+    z-index: 2 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .crm-pdf-hero-content {
+    position: relative !important;
+    z-index: 3 !important;
+    color: #ffffff !important;
+  }
   .itin-cover-title, .itin-day-title, .itin-hotel-name, .itin-dest-name {
     color: #0c1929 !important;
   }
@@ -42,6 +109,7 @@ const ITINERARY_CAPTURE_BOOST_CSS = `
   }
   .itin-chip { background: #0c1929 !important; color: #ffffff !important; }
   .itin-chip--gold { background: #f5ecd6 !important; color: #0c1929 !important; }
+  .itin-chip--rate { background: #0c1929 !important; color: #ffffff !important; font-weight: 700 !important; }
   .itin-pay-footer {
     background: #0c1929 !important;
     color: #ffffff !important;
@@ -88,6 +156,18 @@ function injectCapturedStyles(sourceElement: HTMLElement, clonedDoc: Document) {
       head.appendChild(clone);
     });
   }
+
+  if (typeof document !== 'undefined') {
+    document.querySelectorAll('style').forEach((styleEl) => {
+      const clone = clonedDoc.createElement('style');
+      clone.textContent = styleEl.textContent;
+      head.appendChild(clone);
+    });
+  }
+
+  const boost = clonedDoc.createElement('style');
+  boost.textContent = ITINERARY_CAPTURE_BOOST_CSS;
+  head.appendChild(boost);
 }
 
 function rewriteImagesInClone(clonedDoc: Document, mode: 'proxy' | 'strip') {
@@ -110,11 +190,24 @@ function rewriteImagesInClone(clonedDoc: Document, mode: 'proxy' | 'strip') {
       if (mode === 'proxy') {
         img.setAttribute('src', `${origin}/api/crm-pdf-image?url=${encodeURIComponent(abs.toString())}`);
       } else {
+        if (
+          img.classList.contains('crm-pdf-hero-bg') ||
+          img.classList.contains('itin-letterhead-bg') ||
+          img.classList.contains('crm-pdf-hero-logo') ||
+          img.classList.contains('itin-letterhead-logo')
+        ) {
+          return;
+        }
         img.setAttribute('src', TRANSPARENT_PIXEL);
       }
       img.crossOrigin = 'anonymous';
     } catch {
-      img.setAttribute('src', TRANSPARENT_PIXEL);
+      if (
+        !img.classList.contains('crm-pdf-hero-bg') &&
+        !img.classList.contains('itin-letterhead-bg')
+      ) {
+        img.setAttribute('src', TRANSPARENT_PIXEL);
+      }
       img.crossOrigin = 'anonymous';
     }
   });
@@ -190,13 +283,66 @@ function waitForImage(img: HTMLImageElement, timeoutMs: number): Promise<void> {
   });
 }
 
-async function waitForImagesInElement(element: HTMLElement): Promise<void> {
+async function prepareImagesForCapture(element: HTMLElement): Promise<void> {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  absolutizeImagesInElement(element);
   const imgs = Array.from(element.querySelectorAll('img'));
   if (!imgs.length) return;
+
   await Promise.race([
     Promise.all(imgs.map((img) => waitForImage(img, IMAGE_WAIT_MS))),
     new Promise<void>((r) => window.setTimeout(r, CAPTURE_PREP_MAX_MS)),
   ]);
+
+  await Promise.all(
+    imgs.map(async (img) => {
+      const src = img.getAttribute('src')?.trim();
+      if (!src || src.startsWith('data:')) return;
+
+      if (img.complete && img.naturalWidth > 0) {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL(src.toLowerCase().includes('.png') ? 'image/png' : 'image/jpeg', 0.95);
+            if (dataUrl && dataUrl.startsWith('data:image')) {
+              img.setAttribute('src', dataUrl);
+              return;
+            }
+          }
+        } catch {
+          /* canvas tainted, fall through to fetch */
+        }
+      }
+
+      try {
+        let fetchUrl = src;
+        if (src.startsWith('/') && !src.startsWith('//')) {
+          fetchUrl = `${origin}${src}`;
+        } else if (!src.startsWith(origin)) {
+          fetchUrl = `${origin}/api/crm-pdf-image?url=${encodeURIComponent(src)}`;
+        }
+        const res = await fetch(fetchUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          if (dataUrl && dataUrl.startsWith('data:image')) {
+            img.setAttribute('src', dataUrl);
+          }
+        }
+      } catch {
+        /* retain original src */
+      }
+    })
+  );
 }
 
 function itineraryOnClone(clonedDoc: Document, imageMode: 'proxy' | 'strip', styleSource: HTMLElement) {
@@ -244,7 +390,7 @@ async function runHtml2Pdf(
     letterRendering: itinerary,
     backgroundColor: '#ffffff',
     scrollX: 0,
-    scrollY: -window.scrollY,
+    scrollY: 0,
     width: captureW,
     windowWidth: itinerary ? Math.max(captureW, A4_CONTENT_WIDTH_PX) : captureW,
     height: captureH,
@@ -256,7 +402,7 @@ async function runHtml2Pdf(
       }
       rewriteImagesInClone(clonedDoc, imageMode);
       injectCapturedStyles(styleSource, clonedDoc);
-      const clonedRoot = clonedDoc.querySelector('.hv-doc, .invoice-pdf-root > div');
+      const clonedRoot = clonedDoc.querySelector('.hv-doc, .invoice-pdf-root > div, .crm-pdf-doc');
       if (clonedRoot instanceof HTMLElement) {
         clonedRoot.style.overflow = 'visible';
         clonedRoot.style.height = 'auto';
@@ -325,7 +471,7 @@ export async function downloadElementAsPdf(element: HTMLElement, filename: strin
     sessionCleanup = session.cleanup;
   }
 
-  await waitForImagesInElement(captureEl);
+  await prepareImagesForCapture(captureEl);
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   void captureEl.offsetHeight;
 

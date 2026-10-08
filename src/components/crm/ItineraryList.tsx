@@ -107,6 +107,7 @@ export default function ItineraryList() {
                   <th className="px-5 py-3">Title</th>
                   <th className="px-5 py-3">Guest</th>
                   <th className="px-5 py-3">Dates</th>
+                  <th className="px-5 py-3">Rate</th>
                   <th className="px-5 py-3">Status</th>
                   <th className="px-5 py-3 text-right">Action</th>
                 </tr>
@@ -114,13 +115,13 @@ export default function ItineraryList() {
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
                       Loading…
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                       No itineraries found.
                     </td>
                   </tr>
@@ -130,6 +131,13 @@ export default function ItineraryList() {
                       <td className="px-5 py-3 font-semibold text-gray-900">{r.title}</td>
                       <td className="px-5 py-3">{[r.customer_name, r.customer_phone].filter(Boolean).join(' · ') || '—'}</td>
                       <td className="px-5 py-3 text-gray-600">{[r.travel_start, r.travel_end].filter(Boolean).join(' → ') || '—'}</td>
+                      <td className="px-5 py-3 font-bold text-gray-900 whitespace-nowrap">
+                        {r.quote_price != null && Number(r.quote_price) > 0 ? (
+                          `₹ ${Number(r.quote_price).toLocaleString('en-IN')}`
+                        ) : (
+                          <span className="text-gray-400 font-normal">—</span>
+                        )}
+                      </td>
                       <td className="px-5 py-3">
                         <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700">
                           {r.status}
