@@ -194,7 +194,49 @@ export default function ItineraryEditor({
           throw aErr;
         }
       } else {
-        setAssets((a || []).map((row) => normalizeAssetRow(row as Record<string, unknown>)));
+        const rawAssets = a || [];
+        // Check if any asset is a duplicate of an attached destination's featured image for that day
+        const sec = data?.sections
+          ? normalizeItinerarySections((data as Record<string, unknown>).sections as ItinerarySections)
+          : null;
+        const allDestIds = sec ? [...new Set(sec.days.flatMap((d) => d.destination_ids || []))] : [];
+        if (allDestIds.length > 0 && rawAssets.length > 0) {
+          const { data: destRows } = await supabase
+            .from('crm_destinations')
+            .select('id,featured_image_url')
+            .in('id', allDestIds);
+          const destFeaturedByDay = new Map<number, Set<string>>();
+          for (const day of sec!.days) {
+            const urls = new Set<string>();
+            for (const did of day.destination_ids || []) {
+              const matched = destRows?.find((r) => r.id === did);
+              if (matched?.featured_image_url) {
+                urls.add(matched.featured_image_url.trim().toLowerCase());
+              }
+            }
+            if (urls.size > 0) {
+              destFeaturedByDay.set(day.day, urls);
+            }
+          }
+          const duplicateIds: string[] = [];
+          for (const row of rawAssets) {
+            const dayNum = Number(row.after_day);
+            const urls = destFeaturedByDay.get(dayNum);
+            if (urls && row.image_url && urls.has(String(row.image_url).trim().toLowerCase())) {
+              duplicateIds.push(String(row.id));
+            }
+          }
+          if (duplicateIds.length > 0) {
+            void supabase.from('crm_itinerary_assets').delete().in('id', duplicateIds);
+            setAssets(
+              rawAssets
+                .filter((r) => !duplicateIds.includes(String(r.id)))
+                .map((row) => normalizeAssetRow(row as Record<string, unknown>))
+            );
+            return;
+          }
+        }
+        setAssets(rawAssets.map((row) => normalizeAssetRow(row as Record<string, unknown>)));
       }
     } catch (e: any) {
       alert('Failed to load itinerary: ' + (e?.message || String(e)));
@@ -384,35 +426,18 @@ export default function ItineraryEditor({
 
     if (!itineraryId || assetsTableMissing) return;
     const dayNum = d.day;
-    const urls: string[] = [];
-    if (dest.featured_image_url) urls.push(dest.featured_image_url);
-    const { data: gallery } = await supabase
-      .from('crm_destination_images')
-      .select('image_url,sort_order')
-      .eq('destination_id', dest.id)
-      .order('sort_order')
-      .limit(3);
-    for (const g of gallery || []) {
-      const u = String((g as { image_url: string }).image_url);
-      if (u && !urls.includes(u)) urls.push(u);
+
+    // The destination card already displays dest.featured_image_url.
+    // If a duplicate copy of this destination's featured image was previously stored for this day, clean it up:
+    if (dest.featured_image_url) {
+      await supabase
+        .from('crm_itinerary_assets')
+        .delete()
+        .eq('itinerary_id', itineraryId)
+        .eq('after_day', dayNum)
+        .eq('image_url', dest.featured_image_url);
+      await loadAssets();
     }
-    const existingUrls = new Set(assets.filter((a) => Number(a.after_day) === dayNum).map((a) => a.image_url));
-    let order = assets.filter((a) => Number(a.after_day) === dayNum).reduce((m, a) => Math.max(m, a.sort_order), 0);
-    for (const url of urls) {
-      if (existingUrls.has(url)) continue;
-      order += 10;
-      const { error } = await supabase.from('crm_itinerary_assets').insert({
-        itinerary_id: itineraryId,
-        image_url: url,
-        caption: dest.name,
-        sort_order: order,
-        after_day: dayNum,
-        kind: 'place',
-      });
-      if (error) break;
-      existingUrls.add(url);
-    }
-    await loadAssets();
   };
 
   const del = async () => {

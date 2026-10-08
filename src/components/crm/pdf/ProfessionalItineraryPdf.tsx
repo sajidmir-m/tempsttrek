@@ -177,6 +177,31 @@ export default function ProfessionalItineraryPdf({
             const destIds = d.destination_ids || [];
             const night = nightStayForDay(dayNum, sections.night_stays || []);
             const hotel = night?.hotel_id ? hotelsById.get(night.hotel_id) : undefined;
+
+            // Avoid duplicate images: skip any photo that is already displayed in the destination card or hotel card
+            const normUrl = (u?: string | null) =>
+              (u || '').trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+            const attachedUrls = new Set<string>();
+            for (const did of destIds) {
+              const u = normUrl(destinationsById.get(did)?.featured_image_url);
+              if (u) attachedUrls.add(u);
+            }
+            if (hotel?.featured_image_url) {
+              const u = normUrl(hotel.featured_image_url);
+              if (u) attachedUrls.add(u);
+            }
+
+            const uniqueDayImgs: typeof rowImgs = [];
+            const seenUrls = new Set<string>();
+            for (const img of rowImgs) {
+              const u = normUrl(img.image_url);
+              if (!u) continue;
+              if (attachedUrls.has(u)) continue;
+              if (seenUrls.has(u)) continue;
+              seenUrls.add(u);
+              uniqueDayImgs.push(img);
+            }
+
             return (
               <div key={idx} className="itin-timeline-item">
                 <div className="itin-timeline-badge">{padDay(dayNum)}</div>
@@ -235,9 +260,9 @@ export default function ProfessionalItineraryPdf({
                     </div>
                   ) : null}
 
-                  {rowImgs.length > 0 ? (
+                  {uniqueDayImgs.length > 0 ? (
                     <div className="itin-day-photos">
-                      {rowImgs.map((img) => (
+                      {uniqueDayImgs.map((img) => (
                         <div key={img.id} className="itin-day-photo">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={img.image_url} alt={img.caption || ''} />
