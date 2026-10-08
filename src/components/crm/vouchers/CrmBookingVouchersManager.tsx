@@ -14,7 +14,7 @@ import CrmDialog from '../ui/CrmDialog';
 import CrmBadge from '../ui/CrmBadge';
 import { CrmSkeleton } from '../ui/CrmSkeleton';
 import CrmEmptyState from '../ui/CrmEmptyState';
-import { FileDown, Mail, MessageCircle, Pencil, Plus, Printer, Ticket } from 'lucide-react';
+import { ChevronDown, FileDown, Mail, MessageCircle, Pencil, Plus, Printer, Ticket } from 'lucide-react';
 import type { BookingVoucherPayload, BookingVoucherStay } from '@/lib/crm-catalog';
 import { normalizeItinerarySections } from '@/lib/itinerary-utils';
 import { todayYmd } from '@/lib/crm-date-rules';
@@ -280,11 +280,11 @@ export default function CrmBookingVouchersManager() {
     <div className="crm-surface space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
-            <Ticket size={22} className="text-amber-700" />
+          <h1 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+            <Ticket size={22} className="text-amber-700" aria-hidden="true" />
             Booking confirmation vouchers
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">Wintsum-style vouchers — link to itineraries, import night hotels, print PDF.</p>
+          </h1>
+          <p className="text-sm text-slate-600 mt-1">Wintsum-style vouchers — link to itineraries, import night hotels, print PDF.</p>
         </div>
         <CrmButton variant="primary" onClick={openCreate}>
           <Plus size={16} /> New voucher
@@ -306,24 +306,26 @@ export default function CrmBookingVouchersManager() {
           {filtered.map((r) => (
             <article
               key={r.id}
-              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
+              className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="font-mono text-xs font-bold text-amber-900">{r.booking_id}</p>
-                  <p className="mt-1 font-extrabold text-gray-900">{r.customer_name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {[r.travel_start, r.travel_end].filter(Boolean).join(' → ') || 'Dates TBD'}
-                  </p>
+              <div>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-mono text-xs font-bold text-amber-900">{r.booking_id}</p>
+                    <p className="mt-1 font-extrabold text-slate-900">{r.customer_name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {[r.travel_start, r.travel_end].filter(Boolean).join(' → ') || 'Dates TBD'}
+                    </p>
+                  </div>
+                  <CrmBadge tone={r.payment_status === 'paid' ? 'success' : r.payment_status === 'partial' ? 'warning' : 'neutral'}>
+                    {r.payment_status}
+                  </CrmBadge>
                 </div>
-                <CrmBadge tone={r.payment_status === 'paid' ? 'success' : r.payment_status === 'partial' ? 'warning' : 'neutral'}>
-                  {r.payment_status}
-                </CrmBadge>
+                <p className="mt-3 text-lg font-bold text-teal-800">
+                  ₹ {Number(r.total_amount || 0).toLocaleString('en-IN')}
+                </p>
               </div>
-              <p className="mt-3 text-lg font-bold text-teal-800">
-                ₹ {Number(r.total_amount || 0).toLocaleString('en-IN')}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
                 <Link href={voucherPrintUrl(r.id)} target="_blank">
                   <CrmButton variant="primary" size="sm">
                     <FileDown size={14} /> PDF
@@ -332,7 +334,13 @@ export default function CrmBookingVouchersManager() {
                 <CrmButton variant="secondary" size="sm" onClick={() => openEdit(r)}>
                   <Pencil size={14} /> Edit
                 </CrmButton>
-                <CrmButton variant="danger" size="sm" onClick={() => void remove(r)}>
+                <CrmButton
+                  variant="ghost"
+                  size="sm"
+                  className="border border-slate-200 text-slate-600 hover:border-red-300 hover:bg-red-50 hover:text-red-700 focus-visible:ring-red-400"
+                  onClick={() => void remove(r)}
+                  aria-label={`Delete voucher ${r.booking_id}`}
+                >
                   Delete
                 </CrmButton>
               </div>
@@ -342,36 +350,44 @@ export default function CrmBookingVouchersManager() {
       )}
 
       <CrmDialog open={open} onClose={() => setOpen(false)} title={editing ? 'Edit booking voucher' : 'New booking voucher'} wide>
-        <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
-          <section className="rounded-2xl border border-amber-100 bg-amber-50/50 p-4">
-            <h4 className="text-xs font-bold uppercase tracking-wide text-amber-900 mb-3">1 · Link itinerary</h4>
-            <CrmSelect
-              label="Pull guest & dates from itinerary"
-              value={itineraryId}
-              onChange={(e) => {
-                const id = e.target.value;
-                setItineraryId(id);
-                const it = itineraries.find((i) => i.id === id);
-                if (it) {
-                  setCustomerName(it.customer_name);
-                  setTravelStart(it.travel_start || '');
-                  setTravelEnd(it.travel_end || '');
-                  if (!bookingId) setBookingId(it.id.slice(0, 8).toUpperCase());
-                }
-              }}
-            >
-              <option value="">— Select itinerary —</option>
-              {itineraries.map((it) => (
-                <option key={it.id} value={it.id}>
-                  {it.customer_name} — {it.title}
-                </option>
-              ))}
-            </CrmSelect>
-          </section>
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+          <details open className="group rounded-2xl border border-amber-200 bg-amber-50/50 p-4 transition-all">
+            <summary className="flex cursor-pointer items-center justify-between list-none select-none">
+              <h3 className="text-sm font-bold text-slate-900">1 · Link itinerary</h3>
+              <ChevronDown size={18} className="text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="pt-3">
+              <CrmSelect
+                label="Pull guest & dates from itinerary"
+                value={itineraryId}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  setItineraryId(id);
+                  const it = itineraries.find((i) => i.id === id);
+                  if (it) {
+                    setCustomerName(it.customer_name);
+                    setTravelStart(it.travel_start || '');
+                    setTravelEnd(it.travel_end || '');
+                    if (!bookingId) setBookingId(it.id.slice(0, 8).toUpperCase());
+                  }
+                }}
+              >
+                <option value="">— Select itinerary —</option>
+                {itineraries.map((it) => (
+                  <option key={it.id} value={it.id}>
+                    {it.customer_name} — {it.title}
+                  </option>
+                ))}
+              </CrmSelect>
+            </div>
+          </details>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-4">
-            <h4 className="text-xs font-bold uppercase tracking-wide text-slate-600 mb-3">2 · Guest details</h4>
-            <div className="grid gap-3 sm:grid-cols-2">
+          <details open className="group rounded-2xl border border-slate-200 bg-white p-4 transition-all">
+            <summary className="flex cursor-pointer items-center justify-between list-none select-none">
+              <h3 className="text-sm font-bold text-slate-900">2 · Guest details</h3>
+              <ChevronDown size={18} className="text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="pt-3 grid gap-3 sm:grid-cols-2">
               <CrmInput label="Voucher ID" value={bookingId} onChange={(e) => setBookingId(e.target.value)} />
               <CrmInput label="Guest name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
               <CrmInput label="Phone" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
@@ -379,29 +395,95 @@ export default function CrmBookingVouchersManager() {
               <CrmInput label="Travel start" type="date" min={minDate} value={travelStart} onChange={(e) => setTravelStart(e.target.value)} />
               <CrmInput label="Travel end" type="date" min={minDate} value={travelEnd} onChange={(e) => setTravelEnd(e.target.value)} />
             </div>
-          </section>
+          </details>
 
-          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h4 className="text-xs font-bold uppercase tracking-wide text-slate-600 mb-3">3 · Package & payment</h4>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <CrmInput label="Meal plan" value={payload.meal_plan || ''} onChange={(e) => setPayload((p) => ({ ...p, meal_plan: e.target.value }))} />
-              <CrmInput label="Pax" type="number" value={String(payload.pax ?? '')} onChange={(e) => setPayload((p) => ({ ...p, pax: Number(e.target.value) }))} />
-              <CrmInput label="Rooms" type="number" value={String(payload.rooms ?? '')} onChange={(e) => setPayload((p) => ({ ...p, rooms: Number(e.target.value) }))} />
-              <CrmInput label="Nights" type="number" value={String(payload.nights ?? '')} onChange={(e) => setPayload((p) => ({ ...p, nights: Number(e.target.value) }))} />
-              <CrmInput label="Total (₹)" type="number" value={String(payload.total_amount ?? '')} onChange={(e) => setPayload((p) => ({ ...p, total_amount: Number(e.target.value) }))} />
-              <CrmInput label="Advance (₹)" type="number" value={String(payload.advance_paid ?? '')} onChange={(e) => setPayload((p) => ({ ...p, advance_paid: Number(e.target.value) }))} />
-              <CrmSelect label="Payment status" value={payload.payment_status || 'pending'} onChange={(e) => setPayload((p) => ({ ...p, payment_status: e.target.value }))}>
+          <details open className="group rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition-all">
+            <summary className="flex cursor-pointer items-center justify-between list-none select-none">
+              <h3 className="text-sm font-bold text-slate-900">3 · Package & payment</h3>
+              <ChevronDown size={18} className="text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="pt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <CrmInput
+                label="Meal plan"
+                value={payload.meal_plan || ''}
+                onChange={(e) => setPayload((p) => ({ ...p, meal_plan: e.target.value }))}
+                placeholder="e.g. MAPAI / CPAI"
+              />
+              <CrmInput
+                label="Packs (Pax)"
+                type="number"
+                min="0"
+                value={String(payload.pax ?? '')}
+                onChange={(e) => setPayload((p) => ({ ...p, pax: Number(e.target.value) }))}
+              />
+              <CrmInput
+                label="Rooms"
+                type="number"
+                min="0"
+                value={String(payload.rooms ?? '')}
+                onChange={(e) => setPayload((p) => ({ ...p, rooms: Number(e.target.value) }))}
+              />
+              <CrmInput
+                label="Nights"
+                type="number"
+                min="0"
+                value={String(payload.nights ?? '')}
+                onChange={(e) => setPayload((p) => ({ ...p, nights: Number(e.target.value) }))}
+              />
+              <CrmInput
+                label="Extra bedding"
+                type="number"
+                min="0"
+                value={String(payload.extra_beds ?? '')}
+                onChange={(e) => setPayload((p) => ({ ...p, extra_beds: Number(e.target.value) }))}
+                placeholder="0"
+              />
+              <CrmInput
+                label="Child without bed (CWB 6–10 yrs)"
+                type="number"
+                min="0"
+                value={String(payload.child_without_bed ?? '')}
+                onChange={(e) => setPayload((p) => ({ ...p, child_without_bed: Number(e.target.value) }))}
+                placeholder="0"
+              />
+              <CrmInput
+                label="Total (₹)"
+                type="number"
+                min="0"
+                value={String(payload.total_amount ?? '')}
+                onChange={(e) => setPayload((p) => ({ ...p, total_amount: Number(e.target.value) }))}
+              />
+              <CrmInput
+                label="Advance (₹)"
+                type="number"
+                min="0"
+                value={String(payload.advance_paid ?? '')}
+                onChange={(e) => setPayload((p) => ({ ...p, advance_paid: Number(e.target.value) }))}
+              />
+              <CrmSelect
+                label="Payment status"
+                value={payload.payment_status || 'pending'}
+                onChange={(e) => setPayload((p) => ({ ...p, payment_status: e.target.value }))}
+              >
                 <option value="pending">Pending</option>
                 <option value="partial">Partial</option>
                 <option value="paid">Paid</option>
               </CrmSelect>
             </div>
-          </section>
+          </details>
 
-          <section className="rounded-2xl border border-teal-100 bg-teal-50/40 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-              <h4 className="text-xs font-bold uppercase tracking-wide text-teal-900">4 · Accommodation stays</h4>
-              <div className="flex gap-2">
+          <details open className="group rounded-2xl border border-teal-200 bg-teal-50/40 p-4 transition-all">
+            <summary className="flex cursor-pointer items-center justify-between list-none select-none">
+              <div className="flex flex-wrap items-center gap-3">
+                <h3 className="text-sm font-bold text-slate-900">4 · Accommodation stays</h3>
+                <span className="text-xs text-teal-800 font-medium">
+                  ({(payload.accommodations || []).length} {payload.accommodations?.length === 1 ? 'stay' : 'stays'})
+                </span>
+              </div>
+              <ChevronDown size={18} className="text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="pt-3 space-y-3">
+              <div className="flex justify-end gap-2">
                 <CrmButton variant="secondary" size="sm" onClick={() => void importFromItineraryNights()}>
                   Import from itinerary
                 </CrmButton>
@@ -418,11 +500,10 @@ export default function CrmBookingVouchersManager() {
                   + Add row
                 </CrmButton>
               </div>
-            </div>
-            <div className="space-y-3">
+
               {(payload.accommodations || []).map((stay, idx) => (
-                <div key={idx} className="rounded-xl border border-white bg-white p-3 shadow-sm">
-                  <p className="text-[10px] font-bold text-gray-500 mb-2">Stay {idx + 1}</p>
+                <div key={idx} className="rounded-xl border border-teal-100 bg-white p-3 shadow-sm">
+                  <p className="text-[11px] font-bold text-slate-600 mb-2">Stay {idx + 1}</p>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                     <CrmInput label="Destination" value={stay.destination} onChange={(e) => setStay(idx, { destination: e.target.value })} />
                     <CrmInput label="Check-in" type="date" min={minDate} value={stay.check_in} onChange={(e) => setStay(idx, { check_in: e.target.value })} />
@@ -438,11 +519,14 @@ export default function CrmBookingVouchersManager() {
                 <p className="text-sm text-teal-800/80 text-center py-4">No stays yet — import from itinerary or add a row.</p>
               ) : null}
             </div>
-          </section>
+          </details>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-4">
-            <h4 className="text-xs font-bold uppercase tracking-wide text-slate-600 mb-3">5 · Transport</h4>
-            <div className="grid gap-3 sm:grid-cols-2">
+          <details open className="group rounded-2xl border border-slate-200 bg-white p-4 transition-all">
+            <summary className="flex cursor-pointer items-center justify-between list-none select-none">
+              <h3 className="text-sm font-bold text-slate-900">5 · Transport</h3>
+              <ChevronDown size={18} className="text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="pt-3 grid gap-3 sm:grid-cols-2">
               <CrmSelect
                 label="Cab from catalog"
                 value=""
@@ -460,12 +544,23 @@ export default function CrmBookingVouchersManager() {
               <CrmInput label="Driver" value={payload.cab_driver || ''} onChange={(e) => setPayload((p) => ({ ...p, cab_driver: e.target.value }))} />
               <CrmInput label="Driver contact" value={payload.cab_contact || ''} onChange={(e) => setPayload((p) => ({ ...p, cab_contact: e.target.value }))} />
             </div>
-          </section>
+          </details>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-4">
-            <h4 className="text-xs font-bold uppercase tracking-wide text-slate-600 mb-3">6 · Terms (PDF)</h4>
-            <CrmTextarea rows={4} value={payload.terms_conditions || ''} onChange={(e) => setPayload((p) => ({ ...p, terms_conditions: e.target.value }))} />
-          </section>
+          <details open className="group rounded-2xl border border-slate-200 bg-white p-4 transition-all">
+            <summary className="flex cursor-pointer items-center justify-between list-none select-none">
+              <h3 className="text-sm font-bold text-slate-900">6 · Terms (PDF)</h3>
+              <ChevronDown size={18} className="text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="pt-3">
+              <CrmTextarea
+                label="Terms & conditions (printed on PDF voucher)"
+                rows={4}
+                value={payload.terms_conditions || ''}
+                onChange={(e) => setPayload((p) => ({ ...p, terms_conditions: e.target.value }))}
+                placeholder="Custom booking policies, check-in instructions, or cancellation rules…"
+              />
+            </div>
+          </details>
 
           {editing ? (
             <div className="flex flex-wrap gap-2 rounded-xl bg-slate-100 p-3">
@@ -482,11 +577,16 @@ export default function CrmBookingVouchersManager() {
           ) : null}
         </div>
 
-        <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
-          <CrmButton variant="secondary" onClick={() => setOpen(false)}>Cancel</CrmButton>
-          <CrmButton variant="primary" onClick={() => void save()} disabled={saving}>
-            {saving ? 'Saving…' : 'Save voucher'}
-          </CrmButton>
+        <div className="sticky bottom-0 -mx-6 -mb-6 bg-white/95 backdrop-blur border-t border-slate-200 px-6 py-3 mt-4 flex items-center justify-between gap-2 z-10">
+          <p className="text-xs text-slate-500">
+            {editing ? `Editing voucher ${bookingId}` : 'Complete guest and stay details before saving.'}
+          </p>
+          <div className="flex gap-2">
+            <CrmButton variant="secondary" onClick={() => setOpen(false)}>Cancel</CrmButton>
+            <CrmButton variant="primary" onClick={() => void save()} disabled={saving}>
+              {saving ? 'Saving…' : 'Save voucher'}
+            </CrmButton>
+          </div>
         </div>
       </CrmDialog>
     </div>

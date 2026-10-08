@@ -141,8 +141,12 @@ export default function WintsumBookingVoucherPdf({
             <span className="crm-pdf-v">{pad2(p.nights)}</span>
           </div>
           <div className="crm-pdf-kv">
-            <span className="crm-pdf-k">Extra beds</span>
-            <span className="crm-pdf-v">{pad2(p.extra_beds)}</span>
+            <span className="crm-pdf-k">Extra bedding</span>
+            <span className="crm-pdf-v">{p.extra_beds != null ? pad2(p.extra_beds) : '00'}</span>
+          </div>
+          <div className="crm-pdf-kv">
+            <span className="crm-pdf-k">Child without bed (CWB)</span>
+            <span className="crm-pdf-v">{p.child_without_bed != null ? pad2(p.child_without_bed) : '00'}</span>
           </div>
         </div>
       </section>
