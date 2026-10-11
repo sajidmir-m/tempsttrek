@@ -158,11 +158,11 @@ export default function Navbar() {
                 </span>
                 <span
                   className={cn(
-                    'truncate text-[9px] font-medium uppercase tracking-[0.15em] transition-colors sm:text-[10px] sm:tracking-[0.2em]',
-                    isScrolled ? 'text-emerald-700' : 'text-emerald-200/90'
+                    'truncate text-xs font-medium tracking-normal transition-colors capitalize',
+                    isScrolled ? 'text-emerald-700' : 'text-emerald-200'
                   )}
                 >
-                  {SITE_BRAND.tagline}
+                  {SITE_BRAND.tagline.toLowerCase()}
                 </span>
               </div>
             </Link>

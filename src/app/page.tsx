@@ -173,7 +173,7 @@ export default async function Home() {
           <ScrollReveal width="100%">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
               <div>
-                <p className="text-xs font-semibold tracking-[0.25em] uppercase text-emerald-100">
+                <p className="text-xs font-semibold tracking-wider text-emerald-100">
                   Top Kashmir Destinations
                 </p>
                 <h2 className="text-2xl md:text-3xl font-bold text-white mt-2">
@@ -302,7 +302,7 @@ export default async function Home() {
                       <ShieldCheck size={20} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900">Verified Hotels & Houseboats</h4>
+                      <h3 className="font-semibold text-gray-900 text-base">Verified Hotels & Houseboats</h3>
                       <p className="text-sm text-gray-800">
                         Stay in handpicked 3★–5★ hotels, cozy houseboats on Dal Lake, and premium camps in
                         Gulmarg & Pahalgam.
@@ -314,7 +314,7 @@ export default async function Home() {
                       <Map size={20} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900">Private Cabs & Transfers</h4>
+                      <h3 className="font-semibold text-gray-900 text-base">Private Cabs & Transfers</h3>
                       <p className="text-sm text-gray-800">
                         Comfortable Sedans, SUVs & Tempo Travellers with professional local drivers for all
                         transfers & sightseeing.

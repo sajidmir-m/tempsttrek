@@ -39,7 +39,7 @@ export default function FooterNewsletter() {
         <Send size={16} />
         Send
       </button>
-      <p className="text-[11px] text-emerald-100/70 leading-snug">
+      <p className="text-xs text-emerald-100/90 leading-relaxed">
         Opens your email app to send a subscription request—we will add you manually.
       </p>
     </form>

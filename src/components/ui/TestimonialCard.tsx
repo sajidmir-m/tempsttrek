@@ -20,13 +20,13 @@ export default function TestimonialCard({ name, location, comment, rating }: Tes
           />
         ))}
       </div>
-      <p className="text-gray-800 mb-6 italic">"{comment}"</p>
+      <p className="text-gray-800 mb-6 italic">&ldquo;{comment}&rdquo;</p>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">
           {name.charAt(0)}
         </div>
         <div>
-          <h4 className="font-bold text-gray-900">{name}</h4>
+          <h3 className="font-bold text-gray-900 text-base">{name}</h3>
           <p className="text-xs text-gray-700">{location}</p>
         </div>
       </div>

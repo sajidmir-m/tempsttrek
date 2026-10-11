@@ -38,6 +38,13 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Subtle zoom-out on desktop screens for spacious layout */
+@media (min-width: 1024px) {
+  body {
+    zoom: 0.92;
+  }
+}
+
 html {
   scroll-padding-top: var(--site-navbar-offset);
 }
